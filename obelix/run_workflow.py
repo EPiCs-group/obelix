@@ -90,27 +90,34 @@ class MACE:
     def generate_complex_OH_xyz(self, auxiliary_ligands = [], substrate = []):
         geom = 'OH'
 
-        # Check if auxiliary ligands and substrate are present
-        if auxiliary_ligands == [] and substrate == []:
-            auxiliary_ligands = ['[H-:1]']*4
-        if auxiliary_ligands == [] and substrate != []:
-            auxiliary_ligands = ['[H-:1]']*3
-        
-        auxiliary = auxiliary_ligands
-        
-        if substrate == []:
-            auxiliary.extend([self.bidentate])
-        else:
-            auxiliary.extend([self.bidentate, substrate[0]])
+        try:
+            # Check if auxiliary ligands and substrate are present
+            if auxiliary_ligands == [] and substrate == []:
+                auxiliary_ligands = ['[H-:1]']*4
+            if auxiliary_ligands == [] and substrate != []:
+                auxiliary_ligands = ['[H-:1]']*3
+            
+            auxiliary = auxiliary_ligands
+            
+            if substrate == []:
+                auxiliary.extend([self.bidentate])
+            else:
+                auxiliary.extend([self.bidentate, substrate[0]])
 
-        core = mace.ComplexFromLigands(auxiliary, self.CA, geom)
-        Xs = core.GetStereomers(regime='all', dropEnantiomers=True)
+            core = mace.ComplexFromLigands(auxiliary, self.CA, geom)
+            Xs = core.GetStereomers(regime='all', dropEnantiomers=True)
 
-        bidentate_cycle_idxs = None  # all cycles that could possibly be the metal-bidentate cycle
-        bidentate_idxs = []  # the final bidentate cycle indices
-        for i, X in enumerate(Xs):
-            X.AddConformers(numConfs=10)   
-            X.ToXYZ(self.CA + '_' + '{}{}.xyz'.format(self.name_of_xyz, i), confId='min')
+            bidentate_cycle_idxs = None  # all cycles that could possibly be the metal-bidentate cycle
+            bidentate_idxs = []  # the final bidentate cycle indices
+            for i, X in enumerate(Xs):
+                X.AddConformers(numConfs=10)   
+                X.ToXYZ(self.CA + '_' + '{}{}.xyz'.format(self.name_of_xyz, i), confId='min')
+        except Exception as e:
+            print(e)
+        
+        # remove items from auxiliary list that were added to the complex
+        auxiliary.remove(self.bidentate)
+        auxiliary.remove(substrate[0])
 
         #     # find bidentate indices on the conformer if none were yet
         #     if len(bidentate_idxs) == 0:
