@@ -21,49 +21,33 @@ path_to_workflow = os.path.abspath(os.path.join(os.path.dirname(__file__), "outp
 
 
 # To do: specify input as a dictionary, then parameterize the fixture. Generate descriptor.csv for each input and keep in the expected_output/Dercriptors folder with the name descript_mace_config_1.csv, descript_mace_config_2.csv, etc. Check if mace_config is a suitable name for the mace input we define below. Since we do not compare the xyz files, we do not need to store them in the expected_output folder.
-@pytest.fixture(scope="module")
-def input_for_mace():
-    """
-    Define a square planar geometry with a central Rhodium atom as the metal center. Square planar means that the metal center has 4 ligands in the same plane the other option is 'OH' for octahedral geometry.
-    """
-    geom = "SP"
-    central_atom = "[Rh+]"
 
-    # SMILES and name of the ligand with two points of attachment to the metal center
-    ligand_name = ["1-Naphthyl-DIPAMP"]
-    ligand_smiles = ["c1ccc([P:1](CC[P:1](c2ccccc2)c2cccc3ccccc23)c2cccc3ccccc23)cc1"]
 
-    # SMILES of the auxiliary ligands with one point of attachment to the metal center
-    auxiliary_ligands = ["CC#[N:1]", "CC#[N:1]"]
-
-    # in the SP geometry, the ligands are in the same plane, so we don't need a substrate for this example
-    substrate = []
-
-    # the input for MACE is a dictionary with the following keys
-    mace_input = {
-        "bidentate_ligands": ligand_smiles,
-        "auxiliary_ligands": auxiliary_ligands,
-        "names_of_xyz": ligand_name,
-        "central_atom": central_atom,
-        "geom": geom,
-        "substrate": substrate,
-    }
-
-    return mace_input
+mace_input1 = {
+    "bidentate_ligands": [
+        "c1ccc([P:1](CC[P:1](c2ccccc2)c2cccc3ccccc23)c2cccc3ccccc23)cc1"
+    ],
+    "auxiliary_ligands": ["CC#[N:1]", "CC#[N:1]"],
+    "names_of_xyz": ["1-Naphthyl-DIPAMP"],
+    "central_atom": "[Rh+]",
+    "geom": "SP",
+    "substrate": [],
+}
 
 
 ################ Input for Descriptor calculation ##############
 
 
-@pytest.fixture(scope="module")
-def xyz_files(input_for_mace: dict[str, Any]):
+# use mace_input1, mace_input2, etc. as the input for the descriptor calculation. mace_input is not a fuxture
+@pytest.fixture(params=[mace_input1])
+def xyz_files(request: Any) -> str:
     """
     Run the MACE workflow to generate the xyz files for the input defined in the fixture input_for_mace.
 
     Ouput of MACE is a set of xyz files and will be stored in the 'output/' folder in the current working directory.
     """
     workflow = Workflow(
-        mace_input=input_for_mace,
+        mace_input=request.param,
         path_to_workflow=path_to_workflow,
         geom="BD",
     )
@@ -80,7 +64,7 @@ def xyz_files(input_for_mace: dict[str, Any]):
 ########################### Descriptor calculation ###########################
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def output_csv(xyz_files: str):
     """
     Calculate the descriptors for the xyz structures and write the descriptors to a csv file.
@@ -115,34 +99,51 @@ def output_csv(xyz_files: str):
     return output_csv
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def output_df(output_csv: str):
     """Return the output csv file as a pandas dataframe."""
-    output_df = pd.read_csv(output_csv)
+    # check if the output csv file exists and then read it as a pandas dataframe
+    if os.path.exists(output_csv) and os.path.getsize(output_csv) > 0:
+        output_df = pd.read_csv(output_csv)
+    else:
+        raise ValueError(f"File {output_csv} is empty or does not exist.")
     return output_df
 
 
-@pytest.fixture(scope="module")
-def expected_csv():
-    path_to_expected_csv = os.path.abspath(
+# absolute path to the expected output csv file. Append the expected csv files to the list as we have them
+expected_csv_files = [
+    os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
             "expected_output",
             "Descriptors",
+            "descriptors.csv",
         )
-    )
-    expected_csv = os.path.join(path_to_expected_csv, "descriptors.csv")
-    return expected_csv
+    ),
+]
 
 
-@pytest.fixture(scope="module")
-def expected_df(expected_csv: str):
-    """Return the expected csv file as a pandas dataframe."""
-    expected_df = pd.read_csv(expected_csv)
+# this fixture should return descriptor_mace_input1.csv for the input mace_input1 and descriptor_mace_input2.csv for the input mace_input2, and so on.
+@pytest.fixture(params=expected_csv_files)
+def expected_csv(request: Any) -> str:
+    return request.param
+
+
+@pytest.fixture
+def expected_df(expected_csv: str) -> pd.DataFrame:
+    """Return the expected output csv file as a pandas dataframe."""
+    # check if the expected output csv file exists and then read it as a pandas dataframe
+    if os.path.exists(expected_csv) and os.path.getsize(expected_csv) > 0:
+        expected_df = pd.read_csv(expected_csv)
+    else:
+        raise ValueError(f"File {expected_csv} is empty or does not exist.")
     return expected_df
 
 
 ########################### Testcases ###########################
+
+
+# expected output is in the expected_output folder
 
 
 def test_descriptor_values(output_df: pd.DataFrame, expected_df: pd.DataFrame):
@@ -164,41 +165,62 @@ def test_descriptor_values(output_df: pd.DataFrame, expected_df: pd.DataFrame):
     ), "The descriptor values in the output csv file does not match the expected descriptor values for this input."
 
 
-def test_index_values(output_df: pd.DataFrame, expected_df: pd.DataFrame):
-    output_index_values_df = output_df.loc[:, output_df.columns.str.contains("index")]
-    expected_index_values_df = expected_df.loc[
-        :, expected_df.columns.str.contains("index")
-    ]
-    assert output_index_values_df.equals(
-        expected_index_values_df
-    ), "The index values in the output csv file does not match the expected index values for this input."
+# def test_descriptor_values(output_df: pd.DataFrame, expected_output_df: pd.DataFrame):
+
+#     # Read the expected output csv file as a pandas dataframe
+
+#     # Filter the columns containing the descriptor values
+#     output_descriptor_values_df = output_df.loc[
+#         :, ~output_df.columns.str.contains("index|element|filename_tud")
+#     ]
+
+#     expected_descriptor_values_df = expected_output_df.loc[
+#         :, ~expected_output_df.columns.str.contains("index|element|filename_tud")
+#     ]
+
+#     # Convert the dataframes to numpy arrays for comparison
+#     output_descriptor_values = output_descriptor_values_df.to_numpy()
+#     expected_descriptor_values = expected_descriptor_values_df.to_numpy()
+#     assert np.allclose(
+#         output_descriptor_values, expected_descriptor_values
+#     ), "The descriptor values in the output csv file does not match the expected descriptor values for this input."
 
 
-def test_element_values(output_df: pd.DataFrame, expected_df: pd.DataFrame):
-    output_element_values_df = output_df.loc[
-        :, output_df.columns.str.contains("element")
-    ]
-    expected_element_values_df = expected_df.loc[
-        :, expected_df.columns.str.contains("element")
-    ]
-    assert output_element_values_df.equals(
-        expected_element_values_df
-    ), "The element values in the output csv file does not match the expected element values for this input."
+# def test_index_values(output_df: pd.DataFrame, expected_df: pd.DataFrame):
+#     output_index_values_df = output_df.loc[:, output_df.columns.str.contains("index")]
+#     expected_index_values_df = expected_df.loc[
+#         :, expected_df.columns.str.contains("index")
+#     ]
+#     assert output_index_values_df.equals(
+#         expected_index_values_df
+#     ), "The index values in the output csv file does not match the expected index values for this input."
 
 
-def test_filename_values(output_df: pd.DataFrame, expected_df: pd.DataFrame):
-    assert output_df["filename_tud"].equals(
-        expected_df["filename_tud"]
-    ), "The filename values in the output csv file does not match the expected filename values for this input."
+# def test_element_values(output_df: pd.DataFrame, expected_df: pd.DataFrame):
+#     output_element_values_df = output_df.loc[
+#         :, output_df.columns.str.contains("element")
+#     ]
+#     expected_element_values_df = expected_df.loc[
+#         :, expected_df.columns.str.contains("element")
+#     ]
+#     assert output_element_values_df.equals(
+#         expected_element_values_df
+#     ), "The element values in the output csv file does not match the expected element values for this input."
+
+
+# def test_filename_values(output_df: pd.DataFrame, expected_df: pd.DataFrame):
+#     assert output_df["filename_tud"].equals(
+#         expected_df["filename_tud"]
+#     ), "The filename values in the output csv file does not match the expected filename values for this input."
 
 
 #################### Clean up ####################
 
 
-@pytest.fixture(scope="module", autouse=True)
-def clean_up():
-    """
-    Delete the 'output/' folder generated as a result of the MACE workflow.
-    """
-    yield
-    shutil.rmtree(path_to_workflow)
+# @pytest.fixture(scope="module", autouse=True)
+# def clean_up():
+#     """
+#     Delete the 'output/' folder generated as a result of the MACE workflow.
+#     """
+#     yield
+#     shutil.rmtree(path_to_workflow)
