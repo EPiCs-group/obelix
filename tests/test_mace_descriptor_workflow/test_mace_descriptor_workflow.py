@@ -23,31 +23,69 @@ path_to_workflow = os.path.abspath(os.path.join(os.path.dirname(__file__), "outp
 # To do: specify input as a dictionary, then parameterize the fixture. Generate descriptor.csv for each input and keep in the expected_output/Dercriptors folder with the name descript_mace_config_1.csv, descript_mace_config_2.csv, etc. Check if mace_config is a suitable name for the mace input we define below. Since we do not compare the xyz files, we do not need to store them in the expected_output folder.
 
 
-mace_input1 = {
-    "bidentate_ligands": [
-        "c1ccc([P:1](CC[P:1](c2ccccc2)c2cccc3ccccc23)c2cccc3ccccc23)cc1"
-    ],
-    "auxiliary_ligands": ["CC#[N:1]", "CC#[N:1]"],
-    "names_of_xyz": ["1-Naphthyl-DIPAMP"],
-    "central_atom": "[Rh+]",
-    "geom": "SP",
-    "substrate": [],
-}
+mace_input = [
+    {
+        "bidentate_ligands": [
+            "CCCCOC(=O)N1CC(CC1C[P:1](C2=CC=CC=C2)C3=CC=CC=C3)[P:1](C4=CC=CC=C4)C5=CC=CC=C5"
+        ],
+        "auxiliary_ligands": ["[Cl:1]", "[Cl:1]"],
+        "names_of_xyz": ["BPPM"],
+        "central_atom": "[Rh+]",
+        "geom": "SP",
+        "substrate": [],
+    },
+    {
+        "bidentate_ligands": [
+            "c1ccc([P:1](CC[P:1](c2ccccc2)c2cccc3ccccc23)c2cccc3ccccc23)cc1"
+        ],
+        "auxiliary_ligands": ["CC#[N:1]", "CC#[N:1]"],
+        "names_of_xyz": ["1-Naphthyl-DIPAMP"],
+        "central_atom": "[Rh+]",
+        "geom": "SP",
+        "substrate": [],
+    },
+]
 
+expected_csv_files = [
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "expected_output",
+            "Descriptors",
+            "descriptors_mace_input_1.csv",
+        )
+    ),
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "expected_output",
+            "Descriptors",
+            "descriptors_mace_input_0.csv",
+        )
+    ),
+]
 
 ################ Input for Descriptor calculation ##############
 
 
+mace_input_and_expected_csv = list(zip(mace_input, expected_csv_files))
+
+
+@pytest.fixture(params=mace_input_and_expected_csv)
+def mace_input_and_expected_csv_fix(request):
+    return request.param
+
+
 # use mace_input1, mace_input2, etc. as the input for the descriptor calculation. mace_input is not a fuxture
-@pytest.fixture(params=[mace_input1])
-def xyz_files(request: Any) -> str:
+@pytest.fixture
+def xyz_files(mace_input_and_expected_csv_fix: Any):
     """
     Run the MACE workflow to generate the xyz files for the input defined in the fixture input_for_mace.
 
     Ouput of MACE is a set of xyz files and will be stored in the 'output/' folder in the current working directory.
     """
     workflow = Workflow(
-        mace_input=request.param,
+        mace_input=mace_input_and_expected_csv_fix[0],
         path_to_workflow=path_to_workflow,
         geom="BD",
     )
@@ -58,7 +96,9 @@ def xyz_files(request: Any) -> str:
     # create and write xyz files for the complexes defined by the input
     workflow.run_mace()
     xyz_files = os.path.join(path_to_workflow, "MACE")
-    return xyz_files
+    yield xyz_files
+    # clean up the 'output/' folder
+    shutil.rmtree(path_to_workflow)
 
 
 ########################### Descriptor calculation ###########################
@@ -111,22 +151,12 @@ def output_df(output_csv: str):
 
 
 # absolute path to the expected output csv file. Append the expected csv files to the list as we have them
-expected_csv_files = [
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            "expected_output",
-            "Descriptors",
-            "descriptors.csv",
-        )
-    ),
-]
 
 
 # this fixture should return descriptor_mace_input1.csv for the input mace_input1 and descriptor_mace_input2.csv for the input mace_input2, and so on.
-@pytest.fixture(params=expected_csv_files)
-def expected_csv(request: Any) -> str:
-    return request.param
+@pytest.fixture
+def expected_csv(mace_input_and_expected_csv_fix: Any):
+    return mace_input_and_expected_csv_fix[1]
 
 
 @pytest.fixture
