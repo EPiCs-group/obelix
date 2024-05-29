@@ -10,9 +10,14 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import pytest
+import logging
 
-from obelix.descriptor_calculator import Descriptors
-from obelix.run_workflow import Workflow
+
+# from obelix.descriptor_calculator import Descriptors
+# from obelix.run_workflow import Workflow
+
+import obelix.descriptor_calculator
+import obelix.run_workflow
 
 # path to the folder where the output of MACE (xyz files) and OBeLix (descriptors.csv) will be stored. This folder gets generated as a result of the MACE workflow being called.
 path_to_workflow = os.path.abspath(os.path.join(os.path.dirname(__file__), "output"))
@@ -26,20 +31,20 @@ path_to_workflow = os.path.abspath(os.path.join(os.path.dirname(__file__), "outp
 mace_input = [
     {
         "bidentate_ligands": [
-            "CCCCOC(=O)N1CC(CC1C[P:1](C2=CC=CC=C2)C3=CC=CC=C3)[P:1](C4=CC=CC=C4)C5=CC=CC=C5"
+            "c1ccc([P:1](CC[P:1](c2ccccc2)c2cccc3ccccc23)c2cccc3ccccc23)cc1"
         ],
-        "auxiliary_ligands": ["[Cl:1]", "[Cl:1]"],
-        "names_of_xyz": ["BPPM"],
+        "auxiliary_ligands": ["CC#[N:1]", "CC#[N:1]"],
+        "names_of_xyz": ["1-Naphthyl-DIPAMP"],
         "central_atom": "[Rh+]",
         "geom": "SP",
         "substrate": [],
     },
     {
         "bidentate_ligands": [
-            "c1ccc([P:1](CC[P:1](c2ccccc2)c2cccc3ccccc23)c2cccc3ccccc23)cc1"
+            "CCCCOC(=O)N1CC(CC1C[P:1](C2=CC=CC=C2)C3=CC=CC=C3)[P:1](C4=CC=CC=C4)C5=CC=CC=C5"
         ],
-        "auxiliary_ligands": ["CC#[N:1]", "CC#[N:1]"],
-        "names_of_xyz": ["1-Naphthyl-DIPAMP"],
+        "auxiliary_ligands": ["[Cl:1]", "[Cl:1]"],
+        "names_of_xyz": ["BPPM"],
         "central_atom": "[Rh+]",
         "geom": "SP",
         "substrate": [],
@@ -52,7 +57,7 @@ expected_csv_files = [
             os.path.dirname(__file__),
             "expected_output",
             "Descriptors",
-            "descriptors_mace_input_1.csv",
+            "descriptors_mace_input_0.csv",
         )
     ),
     os.path.abspath(
@@ -60,7 +65,7 @@ expected_csv_files = [
             os.path.dirname(__file__),
             "expected_output",
             "Descriptors",
-            "descriptors_mace_input_0.csv",
+            "descriptors_mace_input_1.csv",
         )
     ),
 ]
@@ -84,12 +89,12 @@ def xyz_files(mace_input_and_expected_csv_fix: Any):
 
     Ouput of MACE is a set of xyz files and will be stored in the 'output/' folder in the current working directory.
     """
-    workflow = Workflow(
+    workflow = obelix.run_workflow.Workflow(
         mace_input=mace_input_and_expected_csv_fix[0],
         path_to_workflow=path_to_workflow,
         geom="BD",
     )
-
+    logging.info("object id of workflow: %s", id(workflow))
     # create the folder structure
     workflow.prepare_folder_structure()
 
@@ -113,11 +118,12 @@ def output_csv(xyz_files: str):
     path_to_mace_output = xyz_files
 
     # calculate the descriptors for the xyz structures
-    descriptors = Descriptors(
+    descriptors = obelix.descriptor_calculator.Descriptors(
         central_atom="Rh",
         path_to_workflow=path_to_mace_output,
         output_type="xyz",
     )
+    logging.info("object id of descriptors: %s", id(descriptors))
     descriptors.calculate_morfeus_descriptors(
         geom_type="BD", solvent=None, printout=False, metal_adduct="pristine"
     )
