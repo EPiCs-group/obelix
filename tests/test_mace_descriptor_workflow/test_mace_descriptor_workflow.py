@@ -22,11 +22,6 @@ import obelix.run_workflow
 # path to the folder where the output of MACE (xyz files) and OBeLix (descriptors.csv) will be stored. This folder gets generated as a result of the MACE workflow being called.
 path_to_workflow = os.path.abspath(os.path.join(os.path.dirname(__file__), "output"))
 
-####################### Input for MACE ######################
-
-
-# To do: specify input as a dictionary, then parameterize the fixture. Generate descriptor.csv for each input and keep in the expected_output/Dercriptors folder with the name descript_mace_config_1.csv, descript_mace_config_2.csv, etc. Check if mace_config is a suitable name for the mace input we define below. Since we do not compare the xyz files, we do not need to store them in the expected_output folder.
-
 
 mace_input = [
     {
@@ -35,16 +30,6 @@ mace_input = [
         ],
         "auxiliary_ligands": ["CC#[N:1]", "CC#[N:1]"],
         "names_of_xyz": ["1-Naphthyl-DIPAMP"],
-        "central_atom": "[Rh+]",
-        "geom": "SP",
-        "substrate": [],
-    },
-    {
-        "bidentate_ligands": [
-            "CCCCOC(=O)N1CC(CC1C[P:1](C2=CC=CC=C2)C3=CC=CC=C3)[P:1](C4=CC=CC=C4)C5=CC=CC=C5"
-        ],
-        "auxiliary_ligands": ["[Cl:1]", "[Cl:1]"],
-        "names_of_xyz": ["BPPM"],
         "central_atom": "[Rh+]",
         "geom": "SP",
         "substrate": [],
@@ -60,17 +45,7 @@ expected_csv_files = [
             "descriptors_mace_input_0.csv",
         )
     ),
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            "expected_output",
-            "Descriptors",
-            "descriptors_mace_input_1.csv",
-        )
-    ),
 ]
-
-################ Input for Descriptor calculation ##############
 
 
 mace_input_and_expected_csv = list(zip(mace_input, expected_csv_files))
@@ -81,7 +56,6 @@ def mace_input_and_expected_csv_fix(request):
     return request.param
 
 
-# use mace_input1, mace_input2, etc. as the input for the descriptor calculation. mace_input is not a fuxture
 @pytest.fixture
 def xyz_files(mace_input_and_expected_csv_fix: Any):
     """
@@ -104,9 +78,6 @@ def xyz_files(mace_input_and_expected_csv_fix: Any):
     yield xyz_files
     # clean up the 'output/' folder
     shutil.rmtree(path_to_workflow)
-
-
-########################### Descriptor calculation ###########################
 
 
 @pytest.fixture
@@ -156,10 +127,6 @@ def output_df(output_csv: str):
     return output_df
 
 
-# absolute path to the expected output csv file. Append the expected csv files to the list as we have them
-
-
-# this fixture should return descriptor_mace_input1.csv for the input mace_input1 and descriptor_mace_input2.csv for the input mace_input2, and so on.
 @pytest.fixture
 def expected_csv(mace_input_and_expected_csv_fix: Any):
     return mace_input_and_expected_csv_fix[1]
@@ -177,9 +144,6 @@ def expected_df(expected_csv: str) -> pd.DataFrame:
 
 
 ########################### Testcases ###########################
-
-
-# expected output is in the expected_output folder
 
 
 def test_descriptor_values(output_df: pd.DataFrame, expected_df: pd.DataFrame):
