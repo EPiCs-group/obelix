@@ -34,6 +34,16 @@ mace_input = [
         "geom": "SP",
         "substrate": [],
     },
+    {
+        "bidentate_ligands": [
+            "CCCCOC(=O)N1CC(CC1C[P:1](C2=CC=CC=C2)C3=CC=CC=C3)[P:1](C4=CC=CC=C4)C5=CC=CC=C5"
+        ],
+        "auxiliary_ligands": ["[Cl:1]", "[Cl:1]"],
+        "names_of_xyz": ["BPPM"],
+        "central_atom": "[Rh+]",
+        "geom": "SP",
+        "substrate": [],
+    },
 ]
 
 expected_csv_files = [
@@ -43,6 +53,14 @@ expected_csv_files = [
             "expected_output",
             "Descriptors",
             "descriptors_mace_input_0.csv",
+        )
+    ),
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "expected_output",
+            "Descriptors",
+            "descriptors_mace_input_1.csv",
         )
     ),
 ]
