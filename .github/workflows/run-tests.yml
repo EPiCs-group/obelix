@@ -1,6 +1,12 @@
-# GitHub Actions workflow to run tests upon push or pull request to the main branch. The workflow runs on Ubuntu, macOS, and Windows operating systems with Python versions 3.10, 3.11, and 3.12. The workflow sets up a conda environment using mamba, installs dependencies listed in the environment.yml file, and runs tests with pytest.
+# GitHub Actions workflow to run tests upon push or pull request to the main
+# branch.
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
+# NOTE: test_mace_descriptor_workflow.py passes on Ubunutu20.04, but fails on
+# Ubuntu22.04. The discrepancy in testing on Ubuntu 20 and 22 possibly comes
+# from an underlying slight difference in how MACE generates xyz structures.
+# Current solution is to run tests on Ubuntu 20.04 platform only. More complex
+# tests with multiple operating systems would currently hinder future
+# developments.
 
 name: Run tests
 
