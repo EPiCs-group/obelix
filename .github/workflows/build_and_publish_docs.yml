@@ -1,5 +1,7 @@
 # This workflow builds and publishes the documentation to GitHub Pages
-# Source: https://coderefinery.github.io/documentation/gh_workflow/#exercise-deploy-sphinx-documentation-to-github-pages
+# This workflow is sourced from https://coderefinery.github.io/documentation/gh_workflow/#exercise-deploy-sphinx-documentation-to-github-pages available
+# under CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/
+# The file paths in the Install dependencies step and Sphinx build step are adjusted to match the file structure of this repository.
 
 
 name: Build and publish docs
