@@ -21,8 +21,9 @@ mace_input = {'bidentate_ligands': ligand_smiles,
                 'geom': geom, 
                 'substrate': substrate}
 
-chemspax_directory = os.path.join('install', "chemspax", 'chemspax')  # use path.join()
-# os.chdir(current_directory)
+# The data files packaged along withchemspax can be accessed by pointing to the path where chemspax is installed in the local mahcine
+chemspax_directory = os.path.dirname(chemspax.__file__)
+
 path_to_substituents = os.path.join(chemspax_directory, "substituents_xyz")
 path_to_database = os.path.join(path_to_substituents, "manually_generated", "central_atom_centroid_database.csv")
 substituent_df = pd.read_excel(os.path.join(os.getcwd(), 'test_chemspax.xlsx'), sheet_name='Sheet1').dropna()

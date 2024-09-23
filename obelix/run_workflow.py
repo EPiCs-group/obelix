@@ -287,7 +287,7 @@ class Workflow:
         
         src_dir_skeletons =  os.path.join(self.path_to_workflow, 'MACE')
         
-        if self.substituent_list == []:
+        if self.substituent_list.size == 0:
             dest_dir_skeletons = os.path.join(self.path_to_workflow, 'ChemSpaX', 'chemspax_output')
             shutil.copytree(src_dir_skeletons, dest_dir_skeletons)  
 
