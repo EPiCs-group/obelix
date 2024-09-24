@@ -1,5 +1,6 @@
 from chemspax.main import main as chemspax_main
 from chemspax.utilities import *
+import chemspax
 import os
 import glob
 import pandas as pd
@@ -198,8 +199,8 @@ class Workflow:
         print('Reading ChemSpaX inputs')
 
         substituent_list = self.chemspax_input['substituent_list']
-        # assume that this path is always at the base of the chemspax package, so substituents are read from there
-        path_to_substituents = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'install', 'chemspax', 'chemspax', 'substituents_xyz', 'manually_generated')
+		# path_to_substituents is where chemspax is installed in the chemspax/chemspax/substituents_xyz/manually_generated. POint to the pip installation location
+        path_to_substituents = os.path.join(os.path.dirname(chemspax.__file__), 'substituents_xyz', 'manually_generated')
         path_to_database = os.path.join(path_to_substituents, "central_atom_centroid_database.csv")
         # path_to_database = self.chemspax_input['path_to_database']
         # path_to_substituents = self.chemspax_input['path_to_substituents']

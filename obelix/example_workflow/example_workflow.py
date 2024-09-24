@@ -1,4 +1,5 @@
 from obelix.run_workflow import *
+import chemspax
 
 ligand_excel_file = os.path.join(os.getcwd(), 'test_mace.xlsx')
 ligand_df = pd.read_excel(ligand_excel_file).dropna()
