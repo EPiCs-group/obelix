@@ -1,0 +1,191 @@
+obelix.descriptor_calculator
+============================
+
+.. py:module:: obelix.descriptor_calculator
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   obelix.descriptor_calculator.descriptors
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   obelix.descriptor_calculator.Descriptors
+
+
+Module Contents
+---------------
+
+.. py:class:: Descriptors(central_atom, path_to_workflow, output_type)
+
+   Class for calculating Morfeus and DFT descriptors. Works for Gaussian log files, CREST folders and xyz files.
+
+
+
+   .. py:attribute:: central_atom
+
+
+   .. py:attribute:: path_to_workflow
+
+
+   .. py:attribute:: supported_output_types
+      :value: ['xyz', 'crest', 'gaussian']
+
+
+
+   .. py:attribute:: output_type
+
+
+   .. py:attribute:: descriptor_df
+      :value: None
+
+
+
+   .. py:method:: _find_bidentate_ligand(elements, coordinates)
+      :staticmethod:
+
+
+      Graph-based approach used to find the bidentate ligand in a complex. This method returns all auxillary ligand
+      atoms and the bidentate ligand atoms. For now we only use the bidentate ligand atoms.
+
+      :param elements:
+      :param coordinates:
+      :param geom_type:
+      :return:
+
+
+
+   .. py:method:: _calculate_c_c_distance_nbd(elements, coordinates, dictionary)
+      :staticmethod:
+
+
+      Calculate the distance between the double bonds that pi coordinate to the metal in a NBD geometry.
+      In this case the NBD geometry was predefined and the indices are known. (always at the bottom of the file)
+
+      :param elements:
+      :param coordinates:
+      :param dictionary:
+      :return:
+
+
+
+   .. py:method:: _calculate_dihedral_angles_nbd_and_metal_donors(dictionary, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx, elements, coordinates, central_carbon_nbd_idx, hydrogens_bonded_to_carbon_back_nbd_idxs)
+      :staticmethod:
+
+
+      Calculate the H-C-M-P dihedral angles for the NBD geometry. In this case the NBD geometry was predefined and the
+      indices are known. (always at the bottom of the file)
+
+      :param dictionary:
+      :param metal_idx:
+      :param bidentate_max_donor_idx:
+      :param bidentate_min_donor_idx:
+      :param elements:
+      :param coordinates:
+      :param central_carbon_nbd_idx:
+      :param hydrogens_bonded_to_carbon_back_nbd_idxs:
+      :return:
+
+
+
+   .. py:method:: _buried_volume_quadrant_analysis(filename, elements, coordinates, dictionary, metal_idx, z_axis_atoms, xz_plane_atoms, excluded_atoms=None, plot_steric_map=False)
+
+      Calculate the buried volume for the 4 quadrants and 8 octants (positive Z direction) of the bidentate ligand.
+      :param elements:
+      :param coordinates:
+      :param dictionary:
+      :param metal_idx:
+      :param z_axis_atoms:
+      :param xz_plane_atoms:
+      :param excluded_atoms:
+      :return:
+
+
+
+   .. py:method:: _merge_descriptor_dfs(old_descriptor_df, new_descriptor_df)
+
+      When self.descriptor_df is not None, the new descriptor df needs to be merged with the old one
+
+      :param old_descriptor_df:
+      :param new_descriptor_df:
+      :return:
+
+
+
+   .. py:method:: set_output_type(new_output_type)
+
+      Set the output type of the descriptor calculator. In this way you can calculate descriptors on CREST output
+      first and the xtb xyz's afterwards (or other way around).
+
+      :param new_output_type:
+      :return:
+
+
+
+   .. py:method:: _calculate_steric_electronic_desc_morfeus(geom_type, solvent, dictionary, elements, coordinates, filename, metal_adduct='pristine', plot_steric_map=False)
+
+      Calculate all steric and electronic descriptors that can be calculated using Morfeus. For NBD ligands,
+      there are additional descriptors that can be calculated.
+
+      :param geom_type:
+      :param solvent:
+      :param dictionary:
+      :param elements:
+      :param coordinates:
+      :param filename:
+      :param metal_adduct:
+      :return:
+
+
+
+   .. py:method:: _calculate_dft_descriptors_from_log(dft, dictionary)
+
+      Calculate descriptors from DFT log file using the DFTExtractor class.
+
+      :param log_file:
+      :param metal_idx:
+      :param bidentate_max_donor_idx:
+      :param bidentate_min_donor_idx:
+      :param dictionary:
+      :param metal_adduct:
+      :return:
+
+
+
+   .. py:method:: calculate_morfeus_descriptors(geom_type, solvent=None, printout=False, metal_adduct='pristine', plot_steric_map=False)
+
+      Function that creates the dictionary for descriptor calculation using Morfeus and performs the right actions
+      based on the output type. For CREST ensembles, the descriptors are boltzmann weighted and averaged.
+
+      :param geom_type:
+      :param solvent:
+      :param printout:
+      :param metal_adduct:
+      :return:
+
+
+
+   .. py:method:: calculate_dft_descriptors_from_log(geom_type, solvent=None, extract_xyz_from_log=False, printout=False, metal_adduct='pristine', plot_steric_map=False)
+
+      Function that creates the dictionary and descriptor dataframe for the DFT descriptors. These descriptors are calculated
+      from the log files of the DFT calculations. The log files are parsed using the cclib package. The descriptors are
+      calculated using either the Morfeus package or extracted from the log files.
+
+      :param geom_type:
+      :param solvent:
+      :param extract_xyz_from_log:
+      :param printout:
+      :param metal_adduct:
+      :return:
+
+
+
+.. py:data:: descriptors
+

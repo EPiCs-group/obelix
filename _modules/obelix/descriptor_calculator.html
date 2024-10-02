@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>obelix.descriptor_calculator &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            obelix
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">obelix.descriptor_calculator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for obelix.descriptor_calculator</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#                                                     #</span>
+<span class="c1">#  __author__ = Adrian Mirza &amp; Adarsh Kalikadien      #</span>
+<span class="c1">#  __institution__ = TU Delft                         #</span>
+<span class="c1">#  __contact__ = a.v.kalikadien@tudelft.nl            #</span>
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">glob</span>
+
+<span class="kn">import</span> <span class="nn">morfeus</span>
+<span class="kn">from</span> <span class="nn">morfeus</span> <span class="kn">import</span> <span class="n">read_xyz</span><span class="p">,</span> <span class="n">BiteAngle</span><span class="p">,</span> <span class="n">ConeAngle</span><span class="p">,</span> <span class="n">BuriedVolume</span><span class="p">,</span> <span class="n">Dispersion</span><span class="p">,</span> <span class="n">SASA</span>
+<span class="kn">from</span> <span class="nn">morfeus.conformer</span> <span class="kn">import</span> <span class="n">ConformerEnsemble</span>
+<span class="kn">from</span> <span class="nn">morfeus.io</span> <span class="kn">import</span> <span class="n">read_cclib</span><span class="p">,</span> <span class="n">write_xyz</span>
+<span class="kn">from</span> <span class="nn">morfeus.utils</span> <span class="kn">import</span> <span class="n">convert_elements</span>
+<span class="kn">import</span> <span class="nn">xtb.utils</span>  <span class="c1"># comment this if working on windows</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">obelix.molecular_graph</span> <span class="kn">import</span> <span class="n">molecular_graph</span>
+<span class="kn">from</span> <span class="nn">obelix.tools.utilities</span> <span class="kn">import</span> <span class="n">dataframe_from_dictionary</span><span class="p">,</span> <span class="n">calculate_distance</span><span class="p">,</span> <span class="n">calculate_dihedral</span>
+<span class="kn">from</span> <span class="nn">obelix.dft_extraction</span> <span class="kn">import</span> <span class="n">DFTExtractor</span><span class="p">,</span> <span class="n">NBDComplex</span>
+
+
+<div class="viewcode-block" id="Descriptors">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors">[docs]</a>
+<span class="k">class</span> <span class="nc">Descriptors</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Class for calculating Morfeus and DFT descriptors. Works for Gaussian log files, CREST folders and xyz files.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_atom</span><span class="p">,</span> <span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">output_type</span><span class="p">):</span>
+<div class="viewcode-block" id="Descriptors.central_atom">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors.central_atom">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span> <span class="o">=</span> <span class="n">central_atom</span></div>
+
+<div class="viewcode-block" id="Descriptors.path_to_workflow">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors.path_to_workflow">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_to_workflow</span> <span class="o">=</span> <span class="n">path_to_workflow</span></div>
+
+<div class="viewcode-block" id="Descriptors.supported_output_types">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors.supported_output_types">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supported_output_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="s1">&#39;crest&#39;</span><span class="p">,</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">]</span></div>
+
+        <span class="k">if</span> <span class="n">output_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_output_types</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Output type </span><span class="si">{</span><span class="n">output_type</span><span class="si">}</span><span class="s1"> not supported. Please choose from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">supported_output_types</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="Descriptors.output_type">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors.output_type">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_type</span> <span class="o">=</span> <span class="n">output_type</span></div>
+
+<div class="viewcode-block" id="Descriptors.descriptor_df">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors.descriptor_df">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Descriptors._find_bidentate_ligand">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors._find_bidentate_ligand">[docs]</a>
+    <span class="k">def</span> <span class="nf">_find_bidentate_ligand</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Graph-based approach used to find the bidentate ligand in a complex. This method returns all auxillary ligand</span>
+<span class="sd">        atoms and the bidentate ligand atoms. For now we only use the bidentate ligand atoms.</span>
+
+<span class="sd">        :param elements:</span>
+<span class="sd">        :param coordinates:</span>
+<span class="sd">        :param geom_type:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ligand_atoms</span><span class="p">,</span> <span class="n">bidentate</span> <span class="o">=</span> <span class="n">molecular_graph</span><span class="p">(</span><span class="n">elements</span><span class="o">=</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="o">=</span><span class="n">coordinates</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ligand_atoms</span><span class="p">,</span> <span class="n">bidentate</span></div>
+
+
+    <span class="o">@</span> <span class="nb">staticmethod</span>
+<div class="viewcode-block" id="Descriptors._calculate_c_c_distance_nbd">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors._calculate_c_c_distance_nbd">[docs]</a>
+    <span class="k">def</span> <span class="nf">_calculate_c_c_distance_nbd</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the distance between the double bonds that pi coordinate to the metal in a NBD geometry.</span>
+<span class="sd">        In this case the NBD geometry was predefined and the indices are known. (always at the bottom of the file)</span>
+
+<span class="sd">        :param elements:</span>
+<span class="sd">        :param coordinates:</span>
+<span class="sd">        :param dictionary:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="n">convert_elements</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="s1">&#39;symbols&#39;</span><span class="p">)</span>
+        <span class="c1"># indexing for all nbd structures is the same, so we can use the same indices for all</span>
+        <span class="n">coordinates_c1</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span>
+        <span class="n">coordinates_c2</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">9</span><span class="p">]</span>
+        <span class="n">distance_pi_bond_1</span> <span class="o">=</span> <span class="n">calculate_distance</span><span class="p">(</span><span class="n">coordinates_c1</span><span class="p">,</span> <span class="n">coordinates_c2</span><span class="p">)</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;distance_pi_bond_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance_pi_bond_1</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;distance_pi_bond_1_element_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;distance_pi_bond_1_element_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="o">-</span><span class="mi">9</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;distance_pi_bond_1_element_1_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">==</span> <span class="n">coordinates_c1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;distance_pi_bond_1_element_2_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">==</span> <span class="n">coordinates_c2</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">coordinates_c3</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">7</span><span class="p">]</span>
+        <span class="n">coordinates_c4</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">]</span>
+        <span class="n">distance_pi_bond_2</span> <span class="o">=</span> <span class="n">calculate_distance</span><span class="p">(</span><span class="n">coordinates_c3</span><span class="p">,</span> <span class="n">coordinates_c4</span><span class="p">)</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;distance_pi_bond_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance_pi_bond_2</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;distance_pi_bond_2_element_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="o">-</span><span class="mi">7</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;distance_pi_bond_2_element_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;distance_pi_bond_2_element_1_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">==</span> <span class="n">coordinates_c3</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;distance_pi_bond_2_element_2_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">==</span> <span class="n">coordinates_c4</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">dictionary</span></div>
+
+
+    <span class="o">@</span> <span class="nb">staticmethod</span>
+<div class="viewcode-block" id="Descriptors._calculate_dihedral_angles_nbd_and_metal_donors">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors._calculate_dihedral_angles_nbd_and_metal_donors">[docs]</a>
+    <span class="k">def</span> <span class="nf">_calculate_dihedral_angles_nbd_and_metal_donors</span><span class="p">(</span><span class="n">dictionary</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span> <span class="n">bidentate_max_donor_idx</span><span class="p">,</span> <span class="n">bidentate_min_donor_idx</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">central_carbon_nbd_idx</span><span class="p">,</span> <span class="n">hydrogens_bonded_to_carbon_back_nbd_idxs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the H-C-M-P dihedral angles for the NBD geometry. In this case the NBD geometry was predefined and the</span>
+<span class="sd">        indices are known. (always at the bottom of the file)</span>
+
+<span class="sd">        :param dictionary:</span>
+<span class="sd">        :param metal_idx:</span>
+<span class="sd">        :param bidentate_max_donor_idx:</span>
+<span class="sd">        :param bidentate_min_donor_idx:</span>
+<span class="sd">        :param elements:</span>
+<span class="sd">        :param coordinates:</span>
+<span class="sd">        :param central_carbon_nbd_idx:</span>
+<span class="sd">        :param hydrogens_bonded_to_carbon_back_nbd_idxs:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="n">convert_elements</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="s1">&#39;symbols&#39;</span><span class="p">)</span>
+        <span class="n">metal_idx</span> <span class="o">=</span> <span class="n">metal_idx</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">bidentate_min_donor_idx</span> <span class="o">=</span> <span class="n">bidentate_min_donor_idx</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">bidentate_max_donor_idx</span> <span class="o">=</span> <span class="n">bidentate_max_donor_idx</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">metal_coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">metal_idx</span><span class="p">]</span>
+        <span class="n">bidentate_min_donor_coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">bidentate_min_donor_idx</span><span class="p">]</span>
+        <span class="n">bidentate_max_donor_coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">bidentate_max_donor_idx</span><span class="p">]</span>
+
+        <span class="c1"># get the central carbon and the two hydrogens bonded to it</span>
+        <span class="n">central_carbon_coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">central_carbon_nbd_idx</span><span class="p">]</span>
+        <span class="n">hydrogen_1_idx</span> <span class="o">=</span> <span class="n">hydrogens_bonded_to_carbon_back_nbd_idxs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">hydrogen_2_idx</span> <span class="o">=</span> <span class="n">hydrogens_bonded_to_carbon_back_nbd_idxs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">hydrogen_1_coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">hydrogen_1_idx</span><span class="p">]</span>
+        <span class="n">hydrogen_2_coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">hydrogen_2_idx</span><span class="p">]</span>
+
+        <span class="c1"># for each hydrogen first find closest donor, then calculate dihedral angle</span>
+        <span class="c1"># p0 is one of the donors, p1 is the metal center, p2 is the nbd central carbon, p3 is one of the hydrogens bound to p2</span>
+        <span class="c1"># hydrogen 1</span>
+        <span class="n">distance_to_min_donor</span> <span class="o">=</span> <span class="n">calculate_distance</span><span class="p">(</span><span class="n">hydrogen_1_coordinates</span><span class="p">,</span> <span class="n">bidentate_min_donor_coordinates</span><span class="p">)</span>
+        <span class="n">distance_to_max_donor</span> <span class="o">=</span> <span class="n">calculate_distance</span><span class="p">(</span><span class="n">hydrogen_1_coordinates</span><span class="p">,</span> <span class="n">bidentate_max_donor_coordinates</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">distance_to_min_donor</span> <span class="o">&lt;</span> <span class="n">distance_to_max_donor</span><span class="p">:</span>
+            <span class="n">closest_donor_coordinates</span> <span class="o">=</span> <span class="n">bidentate_min_donor_coordinates</span>
+            <span class="n">closest_donor_index</span> <span class="o">=</span> <span class="n">bidentate_min_donor_idx</span>
+            <span class="n">dihedral_angle_1</span> <span class="o">=</span> <span class="n">calculate_dihedral</span><span class="p">(</span><span class="n">closest_donor_coordinates</span><span class="p">,</span> <span class="n">metal_coordinates</span><span class="p">,</span> <span class="n">central_carbon_coordinates</span><span class="p">,</span> <span class="n">hydrogen_1_coordinates</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">closest_donor_coordinates</span> <span class="o">=</span> <span class="n">bidentate_max_donor_coordinates</span>
+            <span class="n">closest_donor_index</span> <span class="o">=</span> <span class="n">bidentate_max_donor_idx</span>
+            <span class="n">dihedral_angle_1</span> <span class="o">=</span> <span class="n">calculate_dihedral</span><span class="p">(</span><span class="n">closest_donor_coordinates</span><span class="p">,</span> <span class="n">metal_coordinates</span><span class="p">,</span> <span class="n">central_carbon_coordinates</span><span class="p">,</span> <span class="n">hydrogen_1_coordinates</span><span class="p">)</span>
+
+        <span class="c1"># add to dictionary</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dihedral_angle_1</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_1_element_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">closest_donor_index</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_1_element_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">metal_idx</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_1_element_3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">central_carbon_nbd_idx</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_1_element_4&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">hydrogen_1_idx</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_1_index_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">closest_donor_index</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_1_index_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metal_idx</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_1_index_3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">central_carbon_nbd_idx</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_1_index_4&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hydrogen_1_idx</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># hydrogen 2</span>
+        <span class="n">distance_to_min_donor</span> <span class="o">=</span> <span class="n">calculate_distance</span><span class="p">(</span><span class="n">hydrogen_2_coordinates</span><span class="p">,</span> <span class="n">bidentate_min_donor_coordinates</span><span class="p">)</span>
+        <span class="n">distance_to_max_donor</span> <span class="o">=</span> <span class="n">calculate_distance</span><span class="p">(</span><span class="n">hydrogen_2_coordinates</span><span class="p">,</span> <span class="n">bidentate_max_donor_coordinates</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">distance_to_min_donor</span> <span class="o">&lt;</span> <span class="n">distance_to_max_donor</span><span class="p">:</span>
+            <span class="n">closest_donor_coordinates</span> <span class="o">=</span> <span class="n">bidentate_min_donor_coordinates</span>
+            <span class="n">closest_donor_index</span> <span class="o">=</span> <span class="n">bidentate_min_donor_idx</span>
+            <span class="n">dihedral_angle_2</span> <span class="o">=</span> <span class="n">calculate_dihedral</span><span class="p">(</span><span class="n">closest_donor_coordinates</span><span class="p">,</span> <span class="n">metal_coordinates</span><span class="p">,</span> <span class="n">central_carbon_coordinates</span><span class="p">,</span> <span class="n">hydrogen_2_coordinates</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">closest_donor_coordinates</span> <span class="o">=</span> <span class="n">bidentate_max_donor_coordinates</span>
+            <span class="n">closest_donor_index</span> <span class="o">=</span> <span class="n">bidentate_max_donor_idx</span>
+            <span class="n">dihedral_angle_2</span> <span class="o">=</span> <span class="n">calculate_dihedral</span><span class="p">(</span><span class="n">closest_donor_coordinates</span><span class="p">,</span> <span class="n">metal_coordinates</span><span class="p">,</span> <span class="n">central_carbon_coordinates</span><span class="p">,</span> <span class="n">hydrogen_2_coordinates</span><span class="p">)</span>
+
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dihedral_angle_2</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_2_element_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">closest_donor_index</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_2_element_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">metal_idx</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_2_element_3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">central_carbon_nbd_idx</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_2_element_4&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">hydrogen_2_idx</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_2_index_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">closest_donor_index</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_2_index_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metal_idx</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_2_index_3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">central_carbon_nbd_idx</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dihedral_angle_2_index_4&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hydrogen_2_idx</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">dictionary</span></div>
+
+
+<div class="viewcode-block" id="Descriptors._buried_volume_quadrant_analysis">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors._buried_volume_quadrant_analysis">[docs]</a>
+    <span class="k">def</span> <span class="nf">_buried_volume_quadrant_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span> <span class="n">z_axis_atoms</span><span class="p">,</span> <span class="n">xz_plane_atoms</span><span class="p">,</span> <span class="n">excluded_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot_steric_map</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the buried volume for the 4 quadrants and 8 octants (positive Z direction) of the bidentate ligand.</span>
+<span class="sd">        :param elements:</span>
+<span class="sd">        :param coordinates:</span>
+<span class="sd">        :param dictionary:</span>
+<span class="sd">        :param metal_idx:</span>
+<span class="sd">        :param z_axis_atoms:</span>
+<span class="sd">        :param xz_plane_atoms:</span>
+<span class="sd">        :param excluded_atoms:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">buried_volume</span> <span class="o">=</span> <span class="n">BuriedVolume</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span>
+                                                  <span class="n">z_axis_atoms</span><span class="o">=</span><span class="n">z_axis_atoms</span><span class="p">,</span>
+                                                  <span class="n">xz_plane_atoms</span><span class="o">=</span><span class="n">xz_plane_atoms</span><span class="p">,</span>
+                                                  <span class="n">excluded_atoms</span><span class="o">=</span><span class="n">excluded_atoms</span><span class="p">,</span>
+                                                  <span class="n">radius</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">octant_analysis</span><span class="p">()</span>
+        <span class="n">buried_volume_for_quad_oct</span> <span class="o">=</span> <span class="n">buried_volume</span><span class="o">.</span><span class="n">octant_analysis</span><span class="p">()</span>
+
+        <span class="n">quadrants</span> <span class="o">=</span> <span class="n">buried_volume_for_quad_oct</span><span class="o">.</span><span class="n">quadrants</span><span class="p">[</span><span class="s1">&#39;percent_buried_volume&#39;</span><span class="p">]</span>
+        <span class="n">octants</span> <span class="o">=</span> <span class="n">buried_volume_for_quad_oct</span><span class="o">.</span><span class="n">octants</span><span class="p">[</span><span class="s1">&#39;percent_buried_volume&#39;</span><span class="p">]</span>
+        <span class="n">quadrant_dictionary</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;NE&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;NW&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;SW&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="s1">&#39;SE&#39;</span><span class="p">}</span>
+        <span class="n">octant_dictionary</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;+,+,+&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;-,+,+&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;-,-,+&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;+,-,+&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="s1">&#39;+,-,-&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span> <span class="s1">&#39;-,-,-&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span> <span class="s1">&#39;-,+,-&#39;</span><span class="p">,</span>
+                             <span class="mi">7</span><span class="p">:</span> <span class="s1">&#39;+,+,-&#39;</span><span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">quad_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">quadrants</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="n">quadrant_dictionary</span><span class="p">[</span><span class="n">quad_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_quad&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">quad_index</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span>
+
+        <span class="k">for</span> <span class="n">oct_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">octants</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="n">octant_dictionary</span><span class="p">[</span><span class="n">oct_index</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_octant&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">oct_index</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="k">if</span> <span class="n">plot_steric_map</span><span class="p">:</span>
+            <span class="n">buried_volume</span><span class="o">.</span><span class="n">plot_steric_map</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;_steric_map.png&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">dictionary</span></div>
+
+
+<div class="viewcode-block" id="Descriptors._merge_descriptor_dfs">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors._merge_descriptor_dfs">[docs]</a>
+    <span class="k">def</span> <span class="nf">_merge_descriptor_dfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_descriptor_df</span><span class="p">,</span> <span class="n">new_descriptor_df</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When self.descriptor_df is not None, the new descriptor df needs to be merged with the old one</span>
+
+<span class="sd">        :param old_descriptor_df:</span>
+<span class="sd">        :param new_descriptor_df:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">old_descriptor_df</span> <span class="o">=</span> <span class="n">old_descriptor_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">new_descriptor_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;filename_tud&#39;</span><span class="p">,</span>
+                                                                            <span class="sa">f</span><span class="s2">&quot;index_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                                                            <span class="s2">&quot;index_donor_max&quot;</span><span class="p">,</span>
+                                                                            <span class="s2">&quot;index_donor_min&quot;</span><span class="p">,</span>
+                                                                            <span class="sa">f</span><span class="s2">&quot;element_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                                                            <span class="s2">&quot;element_donor_max&quot;</span><span class="p">,</span>
+                                                                            <span class="s2">&quot;element_donor_min&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">old_descriptor_df</span></div>
+
+
+<div class="viewcode-block" id="Descriptors.set_output_type">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors.set_output_type">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_output_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_output_type</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the output type of the descriptor calculator. In this way you can calculate descriptors on CREST output</span>
+<span class="sd">        first and the xtb xyz&#39;s afterwards (or other way around).</span>
+
+<span class="sd">        :param new_output_type:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">new_output_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_output_types</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Output type </span><span class="si">{</span><span class="n">new_output_type</span><span class="si">}</span><span class="s1"> not supported. Please choose from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">supported_output_types</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_type</span> <span class="o">=</span> <span class="n">new_output_type</span></div>
+
+
+<div class="viewcode-block" id="Descriptors._calculate_steric_electronic_desc_morfeus">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors._calculate_steric_electronic_desc_morfeus">[docs]</a>
+    <span class="k">def</span> <span class="nf">_calculate_steric_electronic_desc_morfeus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geom_type</span><span class="p">,</span> <span class="n">solvent</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="s1">&#39;pristine&#39;</span><span class="p">,</span> <span class="n">plot_steric_map</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate all steric and electronic descriptors that can be calculated using Morfeus. For NBD ligands,</span>
+<span class="sd">        there are additional descriptors that can be calculated.</span>
+
+<span class="sd">        :param geom_type:</span>
+<span class="sd">        :param solvent:</span>
+<span class="sd">        :param dictionary:</span>
+<span class="sd">        :param elements:</span>
+<span class="sd">        :param coordinates:</span>
+<span class="sd">        :param filename:</span>
+<span class="sd">        :param metal_adduct:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># first we need to find the bidentate ligand atoms and the metal center</span>
+        <span class="c1"># bidentate_ligand_atoms = all indices of the bidentate ligand + metal center</span>
+        <span class="c1"># bidentate = just indices of the metal center and the two bidentate ligand atoms</span>
+        <span class="n">bidentate_ligand_atoms</span><span class="p">,</span> <span class="n">bidentate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_bidentate_ligand</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">)</span>
+        <span class="c1"># get elements and coordinates for the bidentate ligand atoms only, these are used in cone angle and quadrant</span>
+        <span class="c1"># calculations</span>
+        <span class="n">bidentate_ligand_atoms_coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">bidentate_ligand_atoms</span><span class="p">]</span>
+        <span class="n">bidentate_ligand_atoms_elements</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">bidentate_ligand_atoms</span><span class="p">]</span>
+        <span class="c1"># metal center idx is always at end of molecular_graph output, so we search for its coordinates to find the index</span>
+        <span class="n">bidentate_ligand_atoms_metal_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">)</span> <span class="o">==</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">bidentate_ligand_atoms</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="c1"># print(bidentate_ligand_atoms_elements[bidentate_ligand_atoms_metal_idx - 1])</span>
+
+        <span class="c1"># first index is the metal, second index is the bidentate ligand 1, third index is the bidentate ligand 2</span>
+        <span class="c1"># in the full complex</span>
+        <span class="c1"># morfeus indices start at 1, so add 1 to the indices</span>
+        <span class="n">metal_idx</span> <span class="o">=</span> <span class="n">bidentate</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">bidentate_1_idx</span> <span class="o">=</span> <span class="n">bidentate</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">bidentate_2_idx</span> <span class="o">=</span> <span class="n">bidentate</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># determine max or min donor based on xTB charge of the donor atoms</span>
+        <span class="c1"># ToDo: make this optional, so that the user can choose whether to use xTB for this or give the max/min donor</span>
+        <span class="n">xtb_functional</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># indicate whether GFN1 or GFN2 is used for electronic descriptors</span>
+        <span class="k">if</span> <span class="n">xtb_functional</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">calculation_method</span> <span class="o">=</span> <span class="s1">&#39;gfn1_xtb&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">calculation_method</span> <span class="o">=</span> <span class="s1">&#39;gfn2_xtb&#39;</span>
+
+        <span class="n">xtb</span> <span class="o">=</span> <span class="n">morfeus</span><span class="o">.</span><span class="n">XTB</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="n">solvent</span><span class="p">)</span>
+        <span class="n">atomic_charges</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_charges</span><span class="p">()</span>  <span class="c1"># determine min/max donor based on xTB charge of the donor atoms</span>
+        <span class="n">charge_bidentate_1</span> <span class="o">=</span> <span class="n">atomic_charges</span><span class="p">[</span><span class="n">bidentate_1_idx</span><span class="p">]</span>
+        <span class="n">charge_bidentate_2</span> <span class="o">=</span> <span class="n">atomic_charges</span><span class="p">[</span><span class="n">bidentate_2_idx</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">charge_bidentate_1</span> <span class="o">&gt;</span> <span class="n">charge_bidentate_2</span><span class="p">:</span>
+            <span class="c1"># this means that bidentate 1 is max donor (charge is less negative, so stronger donor)</span>
+            <span class="n">bidentate_max_donor_idx</span> <span class="o">=</span> <span class="n">bidentate_1_idx</span>
+            <span class="n">bidentate_min_donor_idx</span> <span class="o">=</span> <span class="n">bidentate_2_idx</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># this means that bidentate 2 is max donor</span>
+            <span class="n">bidentate_max_donor_idx</span> <span class="o">=</span> <span class="n">bidentate_2_idx</span>
+            <span class="n">bidentate_min_donor_idx</span> <span class="o">=</span> <span class="n">bidentate_1_idx</span>
+
+        <span class="n">bidentate_ligand_atoms_max_donor_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">)</span> <span class="o">==</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">bidentate_max_donor_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">bidentate_ligand_atoms_min_donor_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">)</span> <span class="o">==</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">bidentate_min_donor_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="c1"># print(bidentate_ligand_atoms_elements[bidentate_ligand_atoms_max_donor_idx - 1])</span>
+        <span class="c1"># print(bidentate_ligand_atoms_elements[bidentate_ligand_atoms_min_donor_idx - 1])</span>
+
+        <span class="c1"># write indices and elements of metal center, max donor, and min donor to dictionary</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;index_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metal_idx</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;index_donor_max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bidentate_max_donor_idx</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;index_donor_min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bidentate_min_donor_idx</span>
+        <span class="n">element_symbols</span> <span class="o">=</span> <span class="n">convert_elements</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;symbols&#39;</span><span class="p">)</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;element_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">element_symbols</span><span class="p">[</span><span class="n">metal_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;element_donor_max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">element_symbols</span><span class="p">[</span><span class="n">bidentate_max_donor_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;element_donor_min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">element_symbols</span><span class="p">[</span><span class="n">bidentate_min_donor_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># by default no atoms are excluded from buried volume analysis and all elements are taken for cone angle analysis</span>
+        <span class="c1"># parameters for quadrant analysis</span>
+        <span class="n">excluded_atoms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># z_axis_atom_index = [bidentate_min_donor_idx,</span>
+        <span class="c1">#                      bidentate_max_donor_idx]  # the index in the log file is 0-based, but the index in morfeus is 1-based</span>
+        <span class="c1"># xz_plane_atom_indices = [bidentate_max_donor_idx]</span>
+
+        <span class="c1"># parameters for cone angle</span>
+        <span class="c1"># cone_angle_elements = elements</span>
+        <span class="c1"># cone_angle_coordinates = coordinates</span>
+        <span class="c1"># cone_angle_correct = True  # whether we can proceed with the cone angle calculation later or not</span>
+
+        <span class="c1"># if the metal adduct is NBD we can do buried volume quadrant analysis, calculate dihedral angles and C=C bond lengths</span>
+        <span class="k">if</span> <span class="n">metal_adduct</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;nbd&#39;</span><span class="p">:</span>
+            <span class="c1"># C=C bond distance (indicator of amount of pi donation to metal center)</span>
+            <span class="n">dictionary</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calculate_c_c_distance_nbd</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">))</span>
+
+            <span class="n">nbd_complex</span> <span class="o">=</span> <span class="n">NBDComplex</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="c1"># dihedral angles</span>
+            <span class="n">carbon_back_nbd_idx</span> <span class="o">=</span> <span class="n">nbd_complex</span><span class="o">.</span><span class="n">check_nbd_back_carbon</span><span class="p">()</span>
+            <span class="n">hydrogens_bonded_to_carbon_back_nbd</span> <span class="o">=</span> <span class="n">nbd_complex</span><span class="o">.</span><span class="n">get_hydrogens_bonded_to_carbon_back_nbd</span><span class="p">()</span>
+            <span class="c1"># if this is not the case, it means that the NBD is not in the correct orientation in the complex</span>
+            <span class="k">if</span> <span class="n">carbon_back_nbd_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">hydrogens_bonded_to_carbon_back_nbd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;NBD found at end of xyz file, calculating stuff the easy way&#39;</span><span class="p">)</span>
+                <span class="n">dictionary</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_dihedral_angles_nbd_and_metal_donors</span><span class="p">(</span><span class="n">dictionary</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span>
+                                                                         <span class="n">bidentate_max_donor_idx</span><span class="p">,</span>
+                                                                         <span class="n">bidentate_min_donor_idx</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span>
+                                                                         <span class="n">coordinates</span><span class="p">,</span> <span class="n">carbon_back_nbd_idx</span><span class="p">,</span>
+                                                                         <span class="n">hydrogens_bonded_to_carbon_back_nbd</span><span class="p">))</span>
+
+                <span class="c1"># quadrant analysis parameters</span>
+                <span class="c1"># exclude all nbd atoms from the quadrant analysis</span>
+                <span class="c1"># last 15 atoms are the nbd atoms, but indexing in morfeus is 1-based</span>
+                <span class="c1"># nbd_indices = list(range(len(elements) - 15, len(elements) + 1))</span>
+                <span class="c1"># excluded_atoms = nbd_indices</span>
+
+                <span class="c1"># if everything with NBD is fine, we can delete all auxillary ligands and calculate the cone angle</span>
+                <span class="c1"># cone_angle_correct = True</span>
+                <span class="c1"># cone_angle_elements = elements[:-15]</span>
+                <span class="c1"># cone_angle_coordinates = coordinates[:-15]</span>
+
+            <span class="k">elif</span> <span class="n">carbon_back_nbd_idx</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">hydrogens_bonded_to_carbon_back_nbd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;NBD not found at end of xyz file, calculating stuff the hard way&#39;</span><span class="p">)</span>
+                <span class="n">carbon_back_nbd_and_hydrogens_idx</span> <span class="o">=</span> <span class="n">nbd_complex</span><span class="o">.</span><span class="n">find_central_carbon_and_hydrogens_nbd_openbabel</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">carbon_back_nbd_and_hydrogens_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">carbon_back_nbd_idx</span> <span class="o">=</span> <span class="n">carbon_back_nbd_and_hydrogens_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">hydrogens_bonded_to_carbon_back_nbd</span> <span class="o">=</span> <span class="p">[</span><span class="n">carbon_back_nbd_and_hydrogens_idx</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">carbon_back_nbd_and_hydrogens_idx</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+                    <span class="c1"># try molsimplify + openbabel approach for identifying the NBD</span>
+                    <span class="n">dictionary</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_dihedral_angles_nbd_and_metal_donors</span><span class="p">(</span><span class="n">dictionary</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span>
+                                                                             <span class="n">bidentate_max_donor_idx</span><span class="p">,</span>
+                                                                             <span class="n">bidentate_min_donor_idx</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span>
+                                                                             <span class="n">coordinates</span><span class="p">,</span> <span class="n">carbon_back_nbd_idx</span><span class="p">,</span>
+                                                                             <span class="n">hydrogens_bonded_to_carbon_back_nbd</span><span class="p">))</span>
+
+                    <span class="c1"># quadrant analysis parameters</span>
+                    <span class="c1"># ToDo: fix nbd_complex.find_nbd_openbabel() such that we can remove NBD for quadrant analysis</span>
+                <span class="c1"># cone_angle_correct = False  # ToDo: fix nbd_complex.find_nbd_openbabel() such that we can remove NBD for cone angle calculation</span>
+
+        <span class="c1"># for the quadrant analysis, we only use the bidentate ligand atoms and metal center</span>
+        <span class="n">z_axis_atom_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">bidentate_ligand_atoms_min_donor_idx</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_max_donor_idx</span><span class="p">]</span>
+        <span class="n">xz_plane_atom_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">bidentate_ligand_atoms_max_donor_idx</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_buried_volume_quadrant_analysis</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_elements</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_metal_idx</span><span class="p">,</span>
+                                                  <span class="n">z_axis_atom_index</span><span class="p">,</span> <span class="n">xz_plane_atom_indices</span><span class="p">,</span> <span class="n">excluded_atoms</span><span class="p">,</span> <span class="n">plot_steric_map</span><span class="p">))</span>
+
+        <span class="c1"># calculate steric descriptors</span>
+        <span class="c1"># for the bite angle we can use the whole complex</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">bite_angle</span> <span class="o">=</span> <span class="n">BiteAngle</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span> <span class="n">bidentate_1_idx</span><span class="p">,</span>
+                                                 <span class="n">bidentate_2_idx</span><span class="p">)</span><span class="o">.</span><span class="n">angle</span>  <span class="c1"># unit: degrees</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;bite_angle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bite_angle</span>
+            <span class="c1"># print(&#39;Bite angle: {}&#39;.format(bite_angle)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Bite angle calculation failed, defaulting to None.&#39;</span><span class="p">)</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;bite_angle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># for the cone angle we again only use the bidentate ligand atoms and metal center</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cone_angle</span> <span class="o">=</span> <span class="n">ConeAngle</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_elements</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">,</span>
+                                   <span class="n">bidentate_ligand_atoms_metal_idx</span><span class="p">)</span><span class="o">.</span><span class="n">cone_angle</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;cone_angle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cone_angle</span>
+            <span class="c1"># print(&#39;Cone angle: {}&#39;.format(cone_angle)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Cone angle calculation failed, defaulting to None.&#39;</span><span class="p">)</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;cone_angle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># if cone_angle_correct:</span>
+        <span class="c1">#     if geom_type == &quot;BD&quot; or geom_type == &quot;SP&quot;:</span>
+        <span class="c1">#         try:</span>
+        <span class="c1">#             cone_angle = ConeAngle(bidentate_ligand_atoms_elements, bidentate_ligand_atoms_coordinates,</span>
+        <span class="c1">#                                                  bidentate_ligand_atoms_metal_idx).cone_angle</span>
+        <span class="c1">#             dictionary[&quot;cone_angle&quot;] = cone_angle</span>
+        <span class="c1">#             # print(&#39;Cone angle: {}&#39;.format(cone_angle)</span>
+        <span class="c1">#         except Exception:</span>
+        <span class="c1">#             print(&#39;Cone angle calculation failed, defaulting to None.&#39;)</span>
+        <span class="c1">#             dictionary[&quot;cone_angle&quot;] = None</span>
+        <span class="c1">#     else:</span>
+        <span class="c1">#         try:</span>
+        <span class="c1">#             a = [bidentate[0]]</span>
+        <span class="c1">#             a.extend(ligand_atoms[bidentate[1]])</span>
+        <span class="c1">#             a = list(np.sort(np.array(a)))</span>
+        <span class="c1">#</span>
+        <span class="c1">#         except Exception:</span>
+        <span class="c1">#             print(&#39;Molecular graph search failed, defaulting to manual search.&#39;)</span>
+        <span class="c1">#             a = list(np.sort(np.array(bidentate)))</span>
+        <span class="c1">#</span>
+        <span class="c1">#         diff = None</span>
+        <span class="c1">#         for id, i in enumerate(a):</span>
+        <span class="c1">#             if i == bidentate[0]:</span>
+        <span class="c1">#                 diff = id</span>
+        <span class="c1">#         elements_cone_angle = cone_angle_elements[a]</span>
+        <span class="c1">#         coordinates_cone_angle = np.array(cone_angle_coordinates)[a]</span>
+        <span class="c1">#         if diff is not None:</span>
+        <span class="c1">#             try:</span>
+        <span class="c1">#                 dictionary[&quot;cone_angle&quot;] = ConeAngle(elements_cone_angle, coordinates_cone_angle,</span>
+        <span class="c1">#                                                      diff + 1).cone_angle</span>
+        <span class="c1">#             except Exception:</span>
+        <span class="c1">#                 # unit: degrees</span>
+        <span class="c1">#                 print(&#39;Cone angle calculation failed, defaulting to None. For complex:&#39;, complex)</span>
+        <span class="c1">#                 dictionary[&quot;cone_angle&quot;] = None</span>
+        <span class="c1">#</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     dictionary[&quot;cone_angle&quot;] = None</span>
+
+        <span class="c1"># calculate distances between metal and donors, units: angstrom</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;distance_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_max_donor_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calculate_distance</span><span class="p">(</span><span class="n">coordinates</span><span class="p">[</span><span class="n">metal_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">bidentate_max_donor_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;distance_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_min_donor_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calculate_distance</span><span class="p">(</span><span class="n">coordinates</span><span class="p">[</span><span class="n">metal_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">bidentate_min_donor_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># calculate buried volume descriptors on only the bidentate ligand atoms</span>
+        <span class="n">bv_metal_center</span> <span class="o">=</span> <span class="n">BuriedVolume</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_elements</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_metal_idx</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span> <span class="n">excluded_atoms</span><span class="o">=</span><span class="n">excluded_atoms</span><span class="p">)</span><span class="o">.</span><span class="n">fraction_buried_volume</span>
+        <span class="n">bv_max_donor</span> <span class="o">=</span> <span class="n">BuriedVolume</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_elements</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_max_donor_idx</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span> <span class="n">excluded_atoms</span><span class="o">=</span><span class="n">excluded_atoms</span><span class="p">)</span><span class="o">.</span><span class="n">fraction_buried_volume</span>
+        <span class="n">bv_min_donor</span> <span class="o">=</span> <span class="n">BuriedVolume</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_elements</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_min_donor_idx</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span> <span class="n">excluded_atoms</span><span class="o">=</span><span class="n">excluded_atoms</span><span class="p">)</span><span class="o">.</span><span class="n">fraction_buried_volume</span>
+        <span class="c1"># unit: fraction of volume occupied by atoms within 3.5A of the atom</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;buried_volume_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_3.5A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bv_metal_center</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;buried_volume_donor_max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bv_max_donor</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;buried_volume_donor_min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bv_min_donor</span>
+
+        <span class="n">bv_metal_4</span> <span class="o">=</span> <span class="n">BuriedVolume</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_elements</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_metal_idx</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">excluded_atoms</span><span class="o">=</span><span class="n">excluded_atoms</span><span class="p">)</span><span class="o">.</span><span class="n">fraction_buried_volume</span>
+        <span class="n">bv_metal_5</span> <span class="o">=</span> <span class="n">BuriedVolume</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_elements</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_metal_idx</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">excluded_atoms</span><span class="o">=</span><span class="n">excluded_atoms</span><span class="p">)</span><span class="o">.</span><span class="n">fraction_buried_volume</span>
+        <span class="n">bv_metal_6</span> <span class="o">=</span> <span class="n">BuriedVolume</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_elements</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_metal_idx</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">excluded_atoms</span><span class="o">=</span><span class="n">excluded_atoms</span><span class="p">)</span><span class="o">.</span><span class="n">fraction_buried_volume</span>
+        <span class="n">bv_metal_7</span> <span class="o">=</span> <span class="n">BuriedVolume</span><span class="p">(</span><span class="n">bidentate_ligand_atoms_elements</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_coordinates</span><span class="p">,</span> <span class="n">bidentate_ligand_atoms_metal_idx</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">excluded_atoms</span><span class="o">=</span><span class="n">excluded_atoms</span><span class="p">)</span><span class="o">.</span><span class="n">fraction_buried_volume</span>
+
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;buried_volume_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_4A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bv_metal_4</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;buried_volume_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_5A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bv_metal_5</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;buried_volume_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_6A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bv_metal_6</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;buried_volume_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_7A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bv_metal_7</span>
+
+        <span class="c1"># print(BuriedVolume(ce.elements, conformer.coordinates, bidentate[1]).print_report())</span>
+        <span class="c1"># BuriedVolume(elements, coordinates, bidentate[1], radius=4).print_report()</span>
+
+        <span class="c1"># calculate dispersion, SASA and electronic descriptors using morfeus</span>
+        <span class="c1"># these are calculated on the whole complex</span>
+        <span class="c1"># dispersion P_int unit: kcal^0.5 mol^-0.5</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;dispersion_p_int_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="n">Dispersion</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">)</span><span class="o">.</span><span class="n">atom_p_int</span><span class="p">[</span><span class="n">metal_idx</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;dispersion_p_int_donor_max_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="n">Dispersion</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">)</span><span class="o">.</span><span class="n">atom_p_int</span><span class="p">[</span><span class="n">bidentate_max_donor_idx</span><span class="p">]</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;dispersion_p_int_donor_min_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="n">Dispersion</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">)</span><span class="o">.</span><span class="n">atom_p_int</span><span class="p">[</span><span class="n">bidentate_min_donor_idx</span><span class="p">]</span>
+        <span class="c1"># SASA unit: A^2</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sasa_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SASA</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">)</span><span class="o">.</span><span class="n">area</span>
+
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;ip_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_ip</span><span class="p">(</span><span class="n">corrected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># unit: eV</span>
+        <span class="n">dipole</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_dipole</span><span class="p">()</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;dipole_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dipole</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dipole</span><span class="p">))</span>  <span class="c1"># unit: Debye dipole moment</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;ea_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_ea</span><span class="p">()</span>  <span class="c1"># unit: eV</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;electrofugality_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_global_descriptor</span><span class="p">(</span>
+            <span class="n">variety</span><span class="o">=</span><span class="s1">&#39;electrofugality&#39;</span><span class="p">,</span> <span class="n">corrected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># unit: eV</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;nucleofugality_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_global_descriptor</span><span class="p">(</span>
+            <span class="n">variety</span><span class="o">=</span><span class="s1">&#39;nucleofugality&#39;</span><span class="p">,</span> <span class="n">corrected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># unit: eV</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;nucleophilicity_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_global_descriptor</span><span class="p">(</span>
+            <span class="n">variety</span><span class="o">=</span><span class="s1">&#39;nucleophilicity&#39;</span><span class="p">,</span> <span class="n">corrected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># unit: eV</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;electrophilicity_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_global_descriptor</span><span class="p">(</span>
+            <span class="n">variety</span><span class="o">=</span><span class="s1">&#39;electrophilicity&#39;</span><span class="p">,</span> <span class="n">corrected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># unit: eV</span>
+
+        <span class="n">homo</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_homo</span><span class="p">()</span>
+        <span class="n">lumo</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_lumo</span><span class="p">()</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;HOMO_LUMO_gap_</span><span class="si">{</span><span class="n">calculation_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lumo</span> <span class="o">-</span> <span class="n">homo</span>
+        
+        <span class="k">return</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span> <span class="n">bidentate_max_donor_idx</span><span class="p">,</span> <span class="n">bidentate_min_donor_idx</span></div>
+
+
+<div class="viewcode-block" id="Descriptors._calculate_dft_descriptors_from_log">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors._calculate_dft_descriptors_from_log">[docs]</a>
+    <span class="k">def</span> <span class="nf">_calculate_dft_descriptors_from_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dft</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate descriptors from DFT log file using the DFTExtractor class.</span>
+
+<span class="sd">        :param log_file:</span>
+<span class="sd">        :param metal_idx:</span>
+<span class="sd">        :param bidentate_max_donor_idx:</span>
+<span class="sd">        :param bidentate_min_donor_idx:</span>
+<span class="sd">        :param dictionary:</span>
+<span class="sd">        :param metal_adduct:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">successful_dft_optimization</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">check_normal_termination</span><span class="p">()</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;optimization_success_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">successful_dft_optimization</span>
+        <span class="n">wall_time</span><span class="p">,</span> <span class="n">cpu_time</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">extract_time</span><span class="p">()</span>
+        <span class="c1"># the last item of wall_time and cpu_time in cclib are the actual extracted values</span>
+        <span class="n">wall_time</span> <span class="o">=</span> <span class="n">wall_time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">cpu_time</span> <span class="o">=</span> <span class="n">cpu_time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># convert timedelta object to hour duration for easy comparison</span>
+        <span class="n">wall_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wall_time</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span> <span class="o">/</span> <span class="mi">3600</span>
+        <span class="n">cpu_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">cpu_time</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span> <span class="o">/</span> <span class="mi">3600</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;wall_time_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wall_time</span>
+        <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;cpu_time_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cpu_time</span>
+
+        <span class="k">if</span> <span class="n">successful_dft_optimization</span><span class="p">:</span>
+            <span class="c1"># if metal_adduct.lower() == &quot;nbd&quot;:</span>
+                <span class="c1"># these are calculated in _calculate_steric_electronic_desc_morfeus already</span>
+                <span class="c1"># # quadrant analysis</span>
+                <span class="c1"># z_axis_atom_index = dft.check_nbd_back_carbon()</span>
+                <span class="c1"># if z_axis_atom_index is not None:  # if the NBD carbon is found it is safe to proceed</span>
+                <span class="c1">#     z_axis_atom_index += 1  # the index in the log file is 0-based, but the index in morfeus is 1-based</span>
+                <span class="c1">#     xz_plane_atom_indices = [bidentate_min_donor_idx, bidentate_max_donor_idx, metal_idx]</span>
+                <span class="c1">#     # exclude all nbd atoms from the quadrant analysis</span>
+                <span class="c1">#     # last 15 atoms are the nbd atoms, but indexing in morfeus is 1-based</span>
+                <span class="c1">#     nbd_indices = list(range(len(dft.elements) - 15, len(dft.elements) + 1))</span>
+                <span class="c1">#     dictionary.update(self._buried_volume_quadrant_analysis(dft.elements, dft.coordinates, dictionary, metal_idx, z_axis_atom_index, xz_plane_atom_indices, nbd_indices))</span>
+
+                    <span class="c1"># # C=C bond distance (indicator of amount of pi donation to metal center)</span>
+                    <span class="c1"># dictionary.update(self._calculate_c_c_distance_nbd(dft.elements, dft.coordinates, dictionary))</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># # dihedral angles</span>
+                    <span class="c1"># carbon_back_nbd_idx = dft.check_nbd_back_carbon()</span>
+                    <span class="c1"># hydrogens_bonded_to_carbon_back_nbd = dft.get_hydrogens_bonded_to_carbon_back_nbd()</span>
+                    <span class="c1"># if carbon_back_nbd_idx is not None and hydrogens_bonded_to_carbon_back_nbd is not None:</span>
+                    <span class="c1">#     dictionary.update(self._calculate_dihedral_angles_nbd_and_metal_donors(dictionary, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx, dft.elements, dft.coordinates, carbon_back_nbd_idx, hydrogens_bonded_to_carbon_back_nbd))</span>
+
+            <span class="c1"># thermodynamic descriptors</span>
+            <span class="n">sum_electronic_and_free_energy</span><span class="p">,</span> <span class="n">sum_electronic_and_enthalpy</span><span class="p">,</span> <span class="n">zero_point_correction</span><span class="p">,</span> <span class="n">entropy</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">extract_thermodynamic_descriptors</span><span class="p">()</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sum_electronic_and_free_energy_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sum_electronic_and_free_energy</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sum_electronic_and_enthalpy_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sum_electronic_and_enthalpy</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;zero_point_correction_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zero_point_correction</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;entropy_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entropy</span>
+
+            <span class="c1"># orbital occupations</span>
+            <span class="c1"># donor with metal</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># this will be skipped for the free ligand since there is no metal center there</span>
+                <span class="n">min_donor_metal_orbital_occupation</span><span class="p">,</span> <span class="n">min_donor_metal_anti_orbital_occupation</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_min_donor_metal_orbital_occupation</span><span class="p">(),</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_min_donor_metal_anti_orbital_occupation</span><span class="p">()</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_min_donor_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_donor_metal_orbital_occupation</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_min_donor_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_donor_metal_anti_orbital_occupation</span>
+                <span class="n">max_donor_metal_orbital_occupation</span><span class="p">,</span> <span class="n">max_donor_metal_anti_orbital_occupation</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_max_donor_metal_orbital_occupation</span><span class="p">(),</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_max_donor_metal_anti_orbital_occupation</span><span class="p">()</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_max_donor_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_donor_metal_orbital_occupation</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_max_donor_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_donor_metal_anti_orbital_occupation</span>
+
+            <span class="c1"># donor with any other element</span>
+            <span class="n">min_donor_other_element_index_list</span><span class="p">,</span> <span class="n">min_donor_other_orbital_occupation_list</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_min_donor_other_orbital_occupation</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">min_donor_other_element_index_list</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">min_donor_other_orbital_occupation_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">element_and_index</span><span class="p">,</span> <span class="n">occupation</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">min_donor_other_element_index_list</span><span class="p">,</span> <span class="n">min_donor_other_orbital_occupation_list</span><span class="p">)):</span>
+                    <span class="n">other_element</span> <span class="o">=</span> <span class="n">element_and_index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">other_element_index</span> <span class="o">=</span> <span class="n">element_and_index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_min_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">occupation</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_min_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_element_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other_element</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_min_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_index_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other_element_index</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_min_donor_other_atom_1_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_min_donor_other_atom_1_element_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_min_donor_other_atom_1_index_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">min_donor_other_element_index_anti_bonding_list</span><span class="p">,</span> <span class="n">min_donor_other_anti_orbital_occupation_list</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_min_donor_other_anti_orbital_occupation</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">min_donor_other_element_index_anti_bonding_list</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">min_donor_other_anti_orbital_occupation_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">element_and_index</span><span class="p">,</span> <span class="n">occupation</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">min_donor_other_element_index_anti_bonding_list</span><span class="p">,</span> <span class="n">min_donor_other_anti_orbital_occupation_list</span><span class="p">)):</span>
+                    <span class="n">other_element</span> <span class="o">=</span> <span class="n">element_and_index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">other_element_index</span> <span class="o">=</span> <span class="n">element_and_index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_min_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">occupation</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_min_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_element_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other_element</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_min_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_index_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other_element_index</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_min_donor_other_atom_1_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_min_donor_other_atom_1_element_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_min_donor_other_atom_1_index_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">max_donor_other_element_index_list</span><span class="p">,</span> <span class="n">max_donor_other_orbital_occupation_list</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_max_donor_other_orbital_occupation</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">max_donor_other_element_index_list</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">max_donor_other_orbital_occupation_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">element_and_index</span><span class="p">,</span> <span class="n">occupation</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">max_donor_other_element_index_list</span><span class="p">,</span> <span class="n">max_donor_other_orbital_occupation_list</span><span class="p">)):</span>
+                    <span class="n">other_element</span> <span class="o">=</span> <span class="n">element_and_index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">other_element_index</span> <span class="o">=</span> <span class="n">element_and_index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_max_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">occupation</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_max_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_element_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other_element</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_max_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_index_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other_element_index</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_max_donor_other_atom_1_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_max_donor_other_atom_1_element_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbital_occupation_max_donor_other_atom_1_index_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">max_donor_other_element_index_anti_bonding_list</span><span class="p">,</span> <span class="n">max_donor_other_anti_orbital_occupation_list</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_max_donor_other_anti_orbital_occupation</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">max_donor_other_element_index_anti_bonding_list</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">max_donor_other_anti_orbital_occupation_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">element_and_index</span><span class="p">,</span> <span class="n">occupation</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">max_donor_other_element_index_anti_bonding_list</span><span class="p">,</span> <span class="n">max_donor_other_anti_orbital_occupation_list</span><span class="p">)):</span>
+                    <span class="n">other_element</span> <span class="o">=</span> <span class="n">element_and_index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">other_element_index</span> <span class="o">=</span> <span class="n">element_and_index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_max_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">occupation</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_max_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_element_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other_element</span>
+                    <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_max_donor_other_atom_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">_index_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other_element_index</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_max_donor_other_atom_1_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_max_donor_other_atom_1_element_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;anti_orbital_occupation_max_donor_other_atom_1_index_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># dipole moment</span>
+            <span class="n">dipole_moment</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_dipole_moment</span><span class="p">()</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;dipole_moment_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dipole_moment</span>
+
+            <span class="c1"># lone pair occupancy</span>
+            <span class="n">lone_pair_occupancy_min_donor</span><span class="p">,</span> <span class="n">lone_pair_occupancy_max_donor</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_donor_lone_pair_occupancy</span><span class="p">()</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;lone_pair_occupancy_min_donor_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lone_pair_occupancy_min_donor</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;lone_pair_occupancy_max_donor_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lone_pair_occupancy_max_donor</span>
+
+            <span class="c1"># dispersion energy</span>
+            <span class="n">dispersion_energy</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_dispersion_energy</span><span class="p">()</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;dispersion_energy_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dispersion_energy</span>
+
+            <span class="c1"># NBO charges</span>
+            <span class="n">metal_nbo_charge</span><span class="p">,</span> <span class="n">min_donor_nbo_charge</span><span class="p">,</span> <span class="n">max_donor_nbo_charge</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_natural_charges</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># this will be skipped for the free ligand since there is no metal center there</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;nbo_charge_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metal_nbo_charge</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;nbo_charge_min_donor_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_donor_nbo_charge</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;nbo_charge_max_donor_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_donor_nbo_charge</span>
+
+            <span class="c1"># mulliken charges</span>
+            <span class="n">metal_mulliken_charge</span><span class="p">,</span> <span class="n">min_donor_mulliken_charge</span><span class="p">,</span> <span class="n">max_donor_mulliken_charge</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_mulliken_charges</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># this will be skipped for the free ligand since there is no metal center there</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;mulliken_charge_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metal_mulliken_charge</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;mulliken_charge_min_donor_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_donor_mulliken_charge</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;mulliken_charge_max_donor_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_donor_mulliken_charge</span>
+
+            <span class="c1"># other electronic descriptors</span>
+            <span class="n">homo_energy</span><span class="p">,</span> <span class="n">lumo_energy</span><span class="p">,</span> <span class="n">homo_lumo_gap</span><span class="p">,</span> <span class="n">hardness</span><span class="p">,</span> <span class="n">softness</span><span class="p">,</span> <span class="n">electronegativity</span><span class="p">,</span> <span class="n">electrophilicity</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">calculate_electronic_descriptors</span><span class="p">()</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;homo_energy_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">homo_energy</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;lumo_energy_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lumo_energy</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;homo_lumo_gap_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">homo_lumo_gap</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;hardness_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hardness</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;softness_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">softness</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;electronegativity_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">electronegativity</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="s2">&quot;electrophilicity_dft&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">electrophilicity</span>
+
+        <span class="k">return</span> <span class="n">dictionary</span></div>
+
+
+<div class="viewcode-block" id="Descriptors.calculate_morfeus_descriptors">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors.calculate_morfeus_descriptors">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_morfeus_descriptors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geom_type</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">printout</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="s1">&#39;pristine&#39;</span><span class="p">,</span> <span class="n">plot_steric_map</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function that creates the dictionary for descriptor calculation using Morfeus and performs the right actions</span>
+<span class="sd">        based on the output type. For CREST ensembles, the descriptors are boltzmann weighted and averaged.</span>
+
+<span class="sd">        :param geom_type:</span>
+<span class="sd">        :param solvent:</span>
+<span class="sd">        :param printout:</span>
+<span class="sd">        :param metal_adduct:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;xyz&#39;</span><span class="p">:</span>
+            <span class="n">complexes_to_calc_descriptors</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="s1">&#39;*.xyz&#39;</span><span class="p">)))</span>
+            <span class="n">dictionary_for_properties</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="c1"># try:</span>
+            <span class="k">for</span> <span class="n">metal_ligand_complex</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">complexes_to_calc_descriptors</span><span class="p">):</span>
+                <span class="n">properties</span> <span class="o">=</span> <span class="p">{}</span>
+
+                <span class="n">base_with_extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">metal_ligand_complex</span><span class="p">)</span>
+                <span class="n">split_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">base_with_extension</span><span class="p">)</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">split_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Calculating descriptors for: &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;...&#39;</span><span class="p">)</span>
+                <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;filename_tud&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filename</span>
+
+                <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="n">read_xyz</span><span class="p">(</span><span class="n">metal_ligand_complex</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">properties</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span> <span class="n">bidentate_max_donor_idx</span><span class="p">,</span> <span class="n">bidentate_min_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_steric_electronic_desc_morfeus</span><span class="p">(</span><span class="n">geom_type</span><span class="o">=</span><span class="n">geom_type</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="n">solvent</span><span class="p">,</span> <span class="n">dictionary</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span> <span class="n">elements</span><span class="o">=</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="o">=</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="n">metal_adduct</span><span class="p">,</span> <span class="n">plot_steric_map</span><span class="o">=</span><span class="n">plot_steric_map</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="c1"># if something goes wrong with the molecular graph it usually means that the geometry is wrong</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error calculating Morfeus descriptors for: &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Make sure to check the geometry&#39;</span><span class="p">)</span>
+                <span class="n">dictionary_for_properties</span><span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">metal_ligand_complex</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]))]</span> <span class="o">=</span> <span class="n">properties</span>
+
+            <span class="n">new_descriptor_df</span> <span class="o">=</span> <span class="n">dataframe_from_dictionary</span><span class="p">(</span><span class="n">dictionary_for_properties</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">printout</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">new_descriptor_df</span><span class="o">.</span><span class="n">to_markdown</span><span class="p">())</span>
+
+            <span class="c1"># merge descriptor dataframes if they already exist</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span> <span class="o">=</span> <span class="n">new_descriptor_df</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_descriptor_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span><span class="p">,</span> <span class="n">new_descriptor_df</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;crest&#39;</span><span class="p">:</span>
+            <span class="n">complexes_to_calc_descriptors</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="s1">&#39;CREST&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">)))</span>
+            <span class="n">dictionary_for_conformer_properties</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="nb">complex</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">complexes_to_calc_descriptors</span><span class="p">):</span>
+                <span class="n">conformer_properties</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">ce</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="nb">complex</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Calculating descriptors for: &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;...&#39;</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">ce</span> <span class="o">=</span> <span class="n">ConformerEnsemble</span><span class="o">.</span><span class="n">from_crest</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Descriptor calculation failed for this complex:&quot;</span><span class="p">,</span> <span class="nb">complex</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="n">conformer_properties</span><span class="p">[</span><span class="s1">&#39;filename_tud&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filename</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">ce</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># ce.generate_mol()</span>
+                    <span class="n">ce</span><span class="o">.</span><span class="n">prune_energy</span><span class="p">()</span>
+                    <span class="n">ce</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+                    <span class="n">conformer_properties</span><span class="p">[</span><span class="s1">&#39;filename_tud&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filename</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Number of conformers in ensemble for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="c1"># define indexing columns that need to be excluded from boltzmann averaging</span>
+                    <span class="n">columns_to_exclude</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;index_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;index_donor_max&quot;</span><span class="p">,</span> <span class="s2">&quot;index_donor_min&quot;</span><span class="p">,</span>
+                                          <span class="sa">f</span><span class="s2">&quot;element_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_atom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;element_donor_max&quot;</span><span class="p">,</span>
+                                          <span class="s2">&quot;element_donor_min&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">metal_adduct</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;nbd&#39;</span><span class="p">:</span>  <span class="c1"># in this case there are some additional columns that need to be skipped</span>
+                        <span class="n">columns_to_exclude</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;distance_pi_bond_1_element_1&#39;</span><span class="p">,</span> <span class="s1">&#39;distance_pi_bond_1_element_2&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;distance_pi_bond_1_element_1_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;distance_pi_bond_1_element_2_idx&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;distance_pi_bond_2_element_1&#39;</span><span class="p">,</span> <span class="s1">&#39;distance_pi_bond_2_element_2&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;distance_pi_bond_2_element_1_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;distance_pi_bond_2_element_2_idx&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;dihedral_angle_1_element_1&#39;</span><span class="p">,</span> <span class="s1">&#39;dihedral_angle_1_element_2&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;dihedral_angle_1_element_3&#39;</span><span class="p">,</span> <span class="s1">&#39;dihedral_angle_1_element_4&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;dihedral_angle_1_index_1&#39;</span><span class="p">,</span> <span class="s1">&#39;dihedral_angle_1_index_2&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;dihedral_angle_1_index_3&#39;</span><span class="p">,</span> <span class="s1">&#39;dihedral_angle_1_index_4&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;dihedral_angle_2_element_1&#39;</span><span class="p">,</span> <span class="s1">&#39;dihedral_angle_2_element_2&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;dihedral_angle_2_element_3&#39;</span><span class="p">,</span> <span class="s1">&#39;dihedral_angle_2_element_4&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;dihedral_angle_2_index_1&#39;</span><span class="p">,</span> <span class="s1">&#39;dihedral_angle_2_index_2&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;dihedral_angle_2_index_3&#39;</span><span class="p">,</span> <span class="s1">&#39;dihedral_angle_2_index_4&#39;</span><span class="p">]</span>
+
+                    <span class="c1"># initialize list which will contain conformers to be removed if indexing properties are not</span>
+                    <span class="c1"># the same as the first conformer</span>
+                    <span class="n">remove_conformer_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">conformer_idx</span><span class="p">,</span> <span class="n">conformer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">conformers</span><span class="p">):</span>
+                            <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="n">conformer</span><span class="o">.</span><span class="n">coordinates</span>
+                            <span class="n">conformer</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span> <span class="n">bidentate_max_donor_idx</span><span class="p">,</span> <span class="n">bidentate_min_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_steric_electronic_desc_morfeus</span><span class="p">(</span><span class="n">geom_type</span><span class="o">=</span><span class="n">geom_type</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="n">solvent</span><span class="p">,</span> <span class="n">dictionary</span><span class="o">=</span><span class="n">conformer</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span> <span class="n">elements</span><span class="o">=</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="o">=</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="n">metal_adduct</span><span class="p">,</span> <span class="n">plot_steric_map</span><span class="o">=</span><span class="n">plot_steric_map</span><span class="p">)</span>
+                            <span class="c1"># these are indexing properties so we don&#39;t want them to be boltzmann averaged</span>
+
+                            <span class="c1"># check if indexing column is the same as the first conformer, if not add conformer to</span>
+                            <span class="c1"># remove_conformer_list to be removed from the conformer ensemble later</span>
+                            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_properties</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">columns_to_exclude</span><span class="p">]:</span>
+                                <span class="k">if</span> <span class="n">conformer</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">!=</span> <span class="n">ce</span><span class="o">.</span><span class="n">conformers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="sa">f</span><span class="s2">&quot;BE AWARE: Indexing property </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not the same across all conformers for conformer </span><span class="si">{</span><span class="n">conformer_idx</span><span class="si">}</span><span class="s2">. &quot;</span>
+                                        <span class="sa">f</span><span class="s2">&quot;This conformer will be deleted for </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="nb">complex</span><span class="p">))</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                                    <span class="n">remove_conformer_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conformer_idx</span><span class="p">)</span>
+
+                        <span class="c1"># get unique list of conformers to remove and delete them from the conformer ensemble</span>
+                        <span class="n">remove_conformer_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">remove_conformer_list</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">remove_conformer_idx</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">remove_conformer_list</span><span class="p">):</span>
+                            <span class="k">del</span> <span class="n">ce</span><span class="o">.</span><span class="n">conformers</span><span class="p">[</span><span class="n">remove_conformer_idx</span><span class="p">]</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Number of conformers in ensemble for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> after removing conformers with different indexing properties: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># boltzmann averaging</span>
+                        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_properties</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">columns_to_exclude</span><span class="p">]:</span>
+                            <span class="n">conformer_properties</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_boltzmann_average&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">boltzmann_statistic</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                            <span class="n">conformer_properties</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_boltzmann_std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">boltzmann_statistic</span><span class="p">(</span><span class="n">key</span><span class="p">,</span>
+                                                                                                  <span class="n">statistic</span><span class="o">=</span><span class="s1">&#39;std&#39;</span><span class="p">)</span>
+                            <span class="n">conformer_properties</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_boltzmann_variance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">boltzmann_statistic</span><span class="p">(</span><span class="n">key</span><span class="p">,</span>
+                                                                                                       <span class="n">statistic</span><span class="o">=</span><span class="s1">&#39;var&#39;</span><span class="p">)</span>
+                            <span class="n">conformer_properties</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_Emin_conformer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_properties</span><span class="p">()[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="c1"># if something goes wrong with the molecular graph it usually means that the geometry is wrong</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error calculating Morfeus descriptors or Boltzmann averaging for: &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Make sure to check the geometry&#39;</span><span class="p">)</span>
+                    <span class="c1"># all descriptors calculated, now we can write the boltzman statistics to the dictionary</span>
+                <span class="n">dictionary_for_conformer_properties</span><span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="nb">complex</span><span class="p">))]</span> <span class="o">=</span> <span class="n">conformer_properties</span>
+
+            <span class="n">new_descriptor_df</span> <span class="o">=</span> <span class="n">dataframe_from_dictionary</span><span class="p">(</span><span class="n">dictionary_for_conformer_properties</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">printout</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">new_descriptor_df</span><span class="o">.</span><span class="n">to_markdown</span><span class="p">())</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span> <span class="o">=</span> <span class="n">new_descriptor_df</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_descriptor_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span><span class="p">,</span> <span class="n">new_descriptor_df</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Output type </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_type</span><span class="p">()</span><span class="si">}</span><span class="s1"> not supported. Please choose from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">supported_output_types</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Descriptors.calculate_dft_descriptors_from_log">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.Descriptors.calculate_dft_descriptors_from_log">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_dft_descriptors_from_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geom_type</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extract_xyz_from_log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">printout</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="s1">&#39;pristine&#39;</span><span class="p">,</span> <span class="n">plot_steric_map</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function that creates the dictionary and descriptor dataframe for the DFT descriptors. These descriptors are calculated</span>
+<span class="sd">        from the log files of the DFT calculations. The log files are parsed using the cclib package. The descriptors are</span>
+<span class="sd">        calculated using either the Morfeus package or extracted from the log files.</span>
+
+<span class="sd">        :param geom_type:</span>
+<span class="sd">        :param solvent:</span>
+<span class="sd">        :param extract_xyz_from_log:</span>
+<span class="sd">        :param printout:</span>
+<span class="sd">        :param metal_adduct:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">supported_metal_adducts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pristine&#39;</span><span class="p">,</span> <span class="s1">&#39;acetonitrile&#39;</span><span class="p">,</span> <span class="s1">&#39;nbd&#39;</span><span class="p">]</span>  <span class="c1"># norbornadiene is placed at bottom of xyz file, so it is a useful pointer for quadrant analysis</span>
+        <span class="k">if</span> <span class="n">metal_adduct</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported_metal_adducts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metal adduct </span><span class="si">{</span><span class="n">metal_adduct</span><span class="si">}</span><span class="s2"> not supported. Please choose from </span><span class="si">{</span><span class="n">supported_metal_adducts</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># get all log files</span>
+        <span class="n">complexes_to_calc_descriptors</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="s1">&#39;*.log&#39;</span><span class="p">)))</span>
+        <span class="n">dictionary_for_properties</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># first calculate morfeus descriptors in same way as for xyz files using cclib</span>
+        <span class="k">for</span> <span class="n">metal_ligand_complex</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">complexes_to_calc_descriptors</span><span class="p">):</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">base_with_extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">metal_ligand_complex</span><span class="p">)</span>
+            <span class="n">split_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">base_with_extension</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">split_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Calculating descriptors for:&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;filename_tud&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filename</span>
+
+            <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="c1"># error catching for reading elements and coordinates from log file</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="n">read_cclib</span><span class="p">(</span><span class="n">metal_ligand_complex</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># if this is true, there is only 1 coordinates array</span>
+                    <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># else morfeus descriptors are calculated for last geometry in log file</span>
+                <span class="n">elements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error reading elements and coordinates from log file for: &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Make sure to check the geometry&#39;</span><span class="p">)</span>
+
+            <span class="c1"># ToDo: initialize DFTExtractor class here and allow assigning min/max donor from the DFT data</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">properties</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span> <span class="n">bidentate_max_donor_idx</span><span class="p">,</span> <span class="n">bidentate_min_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_steric_electronic_desc_morfeus</span><span class="p">(</span><span class="n">geom_type</span><span class="o">=</span><span class="n">geom_type</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="n">solvent</span><span class="p">,</span> <span class="n">dictionary</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span> <span class="n">elements</span><span class="o">=</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="o">=</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="n">metal_adduct</span><span class="p">,</span> <span class="n">plot_steric_map</span><span class="o">=</span><span class="n">plot_steric_map</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error calculating Morfeus descriptors for: &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Make sure to check the geometry&#39;</span><span class="p">)</span>
+
+            <span class="c1"># calculate DFT descriptors from Gaussian log file</span>
+            <span class="c1"># get indices of bidentate ligands and metal for descriptor calculation class</span>
+            <span class="n">dft_properties</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dft</span> <span class="o">=</span> <span class="n">DFTExtractor</span><span class="p">(</span><span class="n">metal_ligand_complex</span><span class="p">,</span> <span class="n">metal_idx</span><span class="p">,</span> <span class="n">bidentate_min_donor_idx</span><span class="p">,</span> <span class="n">bidentate_max_donor_idx</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="p">)</span>
+                <span class="n">dft_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_dft_descriptors_from_log</span><span class="p">(</span><span class="n">dft</span><span class="p">,</span> <span class="n">dft_properties</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># print(e)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DFT descriptor calculation failed for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dft_properties</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">properties</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dft_properties</span><span class="p">)</span>
+
+            <span class="c1"># write xyz for log file</span>
+            <span class="k">if</span> <span class="n">extract_xyz_from_log</span><span class="p">:</span>
+                <span class="n">xyz_filename</span> <span class="o">=</span> <span class="n">metal_ligand_complex</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_DFT.xyz&#39;</span>
+                <span class="k">if</span> <span class="n">elements</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">write_xyz</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">xyz_filename</span><span class="p">),</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">elements</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">coordinates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error writing xyz for: &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Make sure to check the geometry&#39;</span><span class="p">)</span>
+
+            <span class="c1"># for property in properties.keys():</span>
+            <span class="n">dictionary_for_properties</span><span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">metal_ligand_complex</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]))]</span> <span class="o">=</span> <span class="n">properties</span>
+
+        <span class="n">new_descriptor_df</span> <span class="o">=</span> <span class="n">dataframe_from_dictionary</span><span class="p">(</span><span class="n">dictionary_for_properties</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">printout</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">new_descriptor_df</span><span class="o">.</span><span class="n">to_markdown</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span> <span class="o">=</span> <span class="n">new_descriptor_df</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_descriptor_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">descriptor_df</span><span class="p">,</span> <span class="n">new_descriptor_df</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># example descriptor calculation for xyz files with NBD adduct in obelix/Workflow folder</span>
+<div class="viewcode-block" id="descriptors">
+<a class="viewcode-back" href="../../autoapi/obelix/descriptor_calculator/index.html#obelix.descriptor_calculator.descriptors">[docs]</a>
+    <span class="n">descriptors</span> <span class="o">=</span> <span class="n">Descriptors</span><span class="p">(</span><span class="n">central_atom</span><span class="o">=</span><span class="s1">&#39;Rh&#39;</span><span class="p">,</span> <span class="n">path_to_workflow</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;Workflow&#39;</span><span class="p">),</span> <span class="n">output_type</span><span class="o">=</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span></div>
+
+    <span class="n">descriptors</span><span class="o">.</span><span class="n">calculate_morfeus_descriptors</span><span class="p">(</span><span class="n">geom_type</span><span class="o">=</span><span class="s1">&#39;BD&#39;</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">printout</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="s1">&#39;nbd&#39;</span><span class="p">)</span>
+    <span class="n">descriptors</span><span class="o">.</span><span class="n">descriptor_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;descriptors.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># the descriptors can also be calculated for 2 output types and merged into one dataframe as per example below</span>
+    <span class="c1"># conformer_descriptors = Descriptors(central_atom=&#39;Rh&#39;, path_to_workflow=os.path.join(os.getcwd(), &#39;Workflow&#39;), output_type=&#39;crest&#39;)</span>
+    <span class="c1"># conformer_descriptors.calculate_morfeus_descriptors(geom_type=&#39;BD&#39;, solvent=None, printout=False, metal_adduct=&#39;pristine&#39;)</span>
+    <span class="c1"># conformer_descriptors.descriptor_df.to_csv(&#39;conformer_descriptors.csv&#39;, index=False)</span>
+    <span class="c1"># conformer_descriptors.set_output_type(&#39;xyz&#39;)</span>
+    <span class="c1"># conformer_descriptors.calculate_morfeus_descriptors(geom_type=&#39;BD&#39;, solvent=None, printout=False, metal_adduct=&#39;pristine&#39;)</span>
+    <span class="c1"># conformer_descriptors.descriptor_df.to_csv(&#39;conformer_descriptors&#39;, index=False)</span>
+
+    <span class="c1"># example descriptor calculation for log files with NBD adduct</span>
+    <span class="n">dft_descriptors</span> <span class="o">=</span> <span class="n">Descriptors</span><span class="p">(</span><span class="n">central_atom</span><span class="o">=</span><span class="s1">&#39;Rh&#39;</span><span class="p">,</span> <span class="n">path_to_workflow</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;Workflow&#39;</span><span class="p">),</span> <span class="n">output_type</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">)</span>
+    <span class="n">dft_descriptors</span><span class="o">.</span><span class="n">calculate_dft_descriptors_from_log</span><span class="p">(</span><span class="n">geom_type</span><span class="o">=</span><span class="s1">&#39;BD&#39;</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extract_xyz_from_log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">printout</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="s1">&#39;nbd&#39;</span><span class="p">,</span> <span class="n">plot_steric_map</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">dft_descriptors</span><span class="o">.</span><span class="n">descriptor_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;DFT_descriptors.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

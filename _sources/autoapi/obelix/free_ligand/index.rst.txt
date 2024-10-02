@@ -1,0 +1,99 @@
+obelix.free_ligand
+==================
+
+.. py:module:: obelix.free_ligand
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   obelix.free_ligand.ligand_number_list
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   obelix.free_ligand.FreeLigand
+
+
+Module Contents
+---------------
+
+.. py:class:: FreeLigand(path_to_workflow, xyz_filename, dft_log_file)
+
+   .. py:attribute:: path_to_workflow
+
+
+   .. py:attribute:: xyz_filename
+
+
+   .. py:attribute:: complex_xyz_bidentate_1_idx
+      :value: None
+
+
+
+   .. py:attribute:: complex_xyz_bidentate_2_idx
+      :value: None
+
+
+
+   .. py:attribute:: free_ligand_xyz_bidentate_1_idx
+      :value: None
+
+
+
+   .. py:attribute:: free_ligand_xyz_bidentate_2_idx
+      :value: None
+
+
+
+   .. py:attribute:: dft_log_file
+
+
+   .. py:attribute:: dft
+      :value: None
+
+
+
+   .. py:attribute:: descriptor_calculator
+
+
+   .. py:attribute:: metal_center_idx
+      :value: None
+
+
+
+   .. py:attribute:: _min_donor_idx
+      :value: None
+
+
+
+   .. py:attribute:: _max_donor_idx
+      :value: None
+
+
+
+   .. py:method:: initialize_dft_extractor(log_file, metal_center_idx, min_donor_idx, max_donor_idx, metal_adduct)
+
+
+   .. py:method:: assign_min_max_donor_xtb(elements, coordinates, calculation_method='gfn2_xtb', solvent=None)
+
+
+   .. py:method:: assign_min_max_donor_dft()
+
+
+   .. py:property:: min_donor_idx
+
+
+   .. py:property:: max_donor_idx
+
+
+   .. py:method:: calculate_dft_descriptors(solvent=None, extract_xyz_from_log=False, printout=False)
+
+
+.. py:data:: ligand_number_list
+

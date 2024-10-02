@@ -1,0 +1,137 @@
+obelix.molecular_graph
+======================
+
+.. py:module:: obelix.molecular_graph
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   obelix.molecular_graph.atomic_radii
+   obelix.molecular_graph.atomic_radii
+   obelix.molecular_graph.path_to_workflow
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   obelix.molecular_graph.MolGraph
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   obelix.molecular_graph.bfs
+   obelix.molecular_graph.extract_ligand_and_write_xyz
+   obelix.molecular_graph.molecular_graph
+
+
+Module Contents
+---------------
+
+.. py:data:: atomic_radii
+
+.. py:data:: atomic_radii
+
+.. py:class:: MolGraph
+
+   This is a molecular graph class, containing several functionalities:
+   finding the adjancecy matrix, adjancecy list. Class modified from /xyz2graph/xyz2graph.py.
+
+
+   .. py:attribute:: __slots__
+      :value: ['elements', 'x', 'y', 'z', 'adj_list', 'atomic_radii', 'bond_lengths', 'adj_matrix']
+
+
+
+   .. py:attribute:: elements
+      :value: []
+
+
+
+   .. py:attribute:: x
+      :value: []
+
+
+
+   .. py:attribute:: y
+      :value: []
+
+
+
+   .. py:attribute:: z
+      :value: []
+
+
+
+   .. py:attribute:: adj_list
+
+
+   .. py:attribute:: atomic_radii
+      :value: []
+
+
+
+   .. py:attribute:: bond_lengths
+
+
+   .. py:attribute:: adj_matrix
+      :value: None
+
+
+
+   .. py:method:: read_xyz_coord_from_mf(elements, coordinates) -> None
+
+      Reads elements and coordinates from morfeus, searches for elements and their cartesian coordinates
+      and adds them to corresponding arrays.
+
+
+
+   .. py:method:: _generate_adjacency_list()
+
+      Generates an adjacency list from atomic cartesian coordinates.
+
+
+
+.. py:function:: bfs(visited, graph, node)
+
+   This function is a classic breadth-first traversal algorithm. It is applied to find all the subgraphs
+   when the metal center is removed.
+
+   :param visited:
+   :param graph:
+   :param node:
+
+   :return visited:
+
+
+.. py:function:: extract_ligand_and_write_xyz(ligand, bidentate, path_to_workflow, filename)
+
+   This function extracts the ligand from the complex and writes the xyz file of the ligand. The comment line will
+   contain the indices of the donor atoms.
+   :param ligand: list of indices of the ligand atoms
+   :param bidentate: list of metal center, donor 1, donor 2 indices
+   :param path_to_workflow: path to the workflow folder (where the xyz files will be written)
+   :param filename: filename of the complex file, which will be used to name the xyz file
+   :return:
+
+
+.. py:function:: molecular_graph(elements, coordinates, extract_ligand=False, path_to_workflow=None, filename=None)
+
+   This function is applied to find the molecular graph of a TM complex.
+   This function returns the indices of all atoms making the investigated and the indices forming the bite angle.
+
+   :param elements:
+   :param coordinates:
+
+   :return ligand, bidentate:
+
+
+.. py:data:: path_to_workflow
+

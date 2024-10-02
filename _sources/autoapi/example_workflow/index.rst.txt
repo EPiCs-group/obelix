@@ -1,0 +1,78 @@
+example_workflow
+================
+
+.. py:module:: example_workflow
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   example_workflow.ligand_excel_file
+   example_workflow.ligand_df
+   example_workflow.ligand_name
+   example_workflow.ligand_smiles
+   example_workflow.auxiliary_ligands
+   example_workflow.substrate
+   example_workflow.geom
+   example_workflow.central_atom
+   example_workflow.mace_input
+   example_workflow.chemspax_directory
+   example_workflow.path_to_substituents
+   example_workflow.path_to_database
+   example_workflow.substituent_df
+   example_workflow.substituent_list
+   example_workflow.names
+   example_workflow.func_list
+   example_workflow.chemspax_input
+   example_workflow.workflow
+
+
+Module Contents
+---------------
+
+.. py:data:: ligand_excel_file
+
+.. py:data:: ligand_df
+
+.. py:data:: ligand_name
+
+.. py:data:: ligand_smiles
+
+.. py:data:: auxiliary_ligands
+   :value: ['CC#[N:1]', 'CC#[N:1]']
+
+
+.. py:data:: substrate
+   :value: ['CC#[N:1]']
+
+
+.. py:data:: geom
+   :value: 'SP'
+
+
+.. py:data:: central_atom
+   :value: '[Rh+]'
+
+
+.. py:data:: mace_input
+
+.. py:data:: chemspax_directory
+
+.. py:data:: path_to_substituents
+
+.. py:data:: path_to_database
+
+.. py:data:: substituent_df
+
+.. py:data:: substituent_list
+
+.. py:data:: names
+
+.. py:data:: func_list
+
+.. py:data:: chemspax_input
+
+.. py:data:: workflow
+

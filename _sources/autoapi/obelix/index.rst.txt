@@ -1,0 +1,29 @@
+obelix
+======
+
+.. py:module:: obelix
+
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/obelix/tools/index
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/obelix/descriptor_calculator/index
+   /autoapi/obelix/dft_extraction/index
+   /autoapi/obelix/free_ligand/index
+   /autoapi/obelix/model_structure_generator/index
+   /autoapi/obelix/molecular_graph/index
+   /autoapi/obelix/run_workflow/index
+
+

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OBeLiX &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=01f34227"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            obelix
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">OBeLiX</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="obelix">
+<h1>OBeLiX<a class="headerlink" href="#obelix" title="Link to this heading"></a></h1>
+<p><img alt="logo" src="_images/logo.png" />
+Open Bidentate Ligand eXplorer (OBeLiX) is a workflow for automated and reproducible TM-based catalyst structure generation and descriptor calculation. It Uses
+our in-house developed packages <a class="reference external" href="https://github.com/EPiCs-group/epic-mace">MACE</a> and <a class="reference external" href="https://github.com/epics-group/chemspax">ChemSpaX</a> for
+bias-free catalyst structure generation. <a class="reference external" href="https://github.com/crest-lab/crest">CREST</a> is used for conformer search.
+Automated descriptor extraction/calculation is done using <a class="reference external" href="https://github.com/digital-chemistry-laboratory/morfeus">Morfeus</a> and <a class="reference external" href="https://github.com/cclib/cclib">cclib</a>. The workflow is currently usable for metal-ligand complexes of monodentate and bidentate ligands.</p>
+</section>
+<section id="table-of-contents">
+<h1>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading"></a></h1>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#installation"><span class="xref myst">Installation</span></a></p></li>
+<li><p><a class="reference internal" href="#folder-structure"><span class="xref myst">Folder structure</span></a></p></li>
+<li><p><a class="reference internal" href="#functionalities"><span class="xref myst">Functionalities</span></a></p></li>
+<li><p><a class="reference internal" href="#workflow-structure"><span class="xref myst">Workflow structure</span></a></p></li>
+<li><p><a class="reference internal" href="#citation"><span class="xref myst">Citation</span></a></p></li>
+</ol>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>After cloning the repository, the conda environment with dependencies can be created from the environment.yml file with conda:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/EPiCs-group/obelix
+<span class="nb">cd</span><span class="w"> </span>obelix
+conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+</pre></div>
+</div>
+<p>The obelix package can then be installed with pip from setup.py in the obelix folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="folder-structure">
+<h2>Folder structure<a class="headerlink" href="#folder-structure" title="Link to this heading"></a></h2>
+<p>For each step of the workflow, the results are stored in a separate and predefined folder structure which is as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Workflow/MACE
+Workflow/ChemSpaX
+Workflow/CREST
+Workflow/Descriptors
+</pre></div>
+</div>
+<p>The output folder structure is a crucial first step in using the workflow, it is recommended to use the following commands to create the folder structure:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">obelix.run_workflow</span> <span class="kn">import</span> <span class="n">Workflow</span> <span class="c1"># import the workflow class if this you are not running code in run_workflow.py</span>
+
+<span class="n">workflow</span> <span class="o">=</span> <span class="n">Workflow</span><span class="p">(</span><span class="n">path_to_workflow</span> <span class="o">=</span> <span class="s2">&quot;your/path/to/workflow_results&quot;</span><span class="p">)</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">prepare_folder_structure</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This will create a ‘Workflow’ folder at the indicated path with the necessary subdirectories.</p>
+</section>
+<section id="functionalities">
+<h2>Functionalities<a class="headerlink" href="#functionalities" title="Link to this heading"></a></h2>
+<p>As mentioned, the workflow consists of four modules, each with their own functionality. The modules can be used separately or all at once.
+First the modules will be explained, then the workflow structrure and examples will be explained.</p>
+<section id="structure-generation-mace">
+<h3>Structure generation (MACE)<a class="headerlink" href="#structure-generation-mace" title="Link to this heading"></a></h3>
+<p>MACE is used to discover configurations for square planar and octahedral metal-ligand complexes. The generated 3D coordinates are optimized at FF level.
+The ligands and the metal center are given as SMILES and the ‘ComplexFromLigands’ function from MACE is used to generate the 3D coordinates and possible ligand-metal configurations.
+Afterwards the configuration with the lowest energy is selected and written to an xyz file.
+The main functionalities are contained in run_workflow.py.</p>
+</section>
+<section id="chemical-space-exploration-chemspax">
+<h3>Chemical space exploration (ChemSpaX)<a class="headerlink" href="#chemical-space-exploration-chemspax" title="Link to this heading"></a></h3>
+<p>ChemSpaX is used to create variations of a chemical structure by substituting dummy atoms on a scaffold (skeleton structure) with substituents (functional groups) from a database.
+The newly placed functional groups are optimized with FF and the resulting structures are stored in a folder.
+The functional groups to place are given as a string input (name of the group), but in the example below this is contained in an excel file.
+The main functionalities are contained in run_workflow.py and a customized version of ChemSpaX in install/ChemSpaX.</p>
+</section>
+<section id="conformer-search-crest">
+<h3>Conformer search (CREST)<a class="headerlink" href="#conformer-search-crest" title="Link to this heading"></a></h3>
+<p>Conformer search is done using CREST. To use this functionality, the user needs to have the CREST binaries downloaded and added to the system’s PATH variable.
+An xTB optimization is done prior to the conformer search. By default the conformer search is performed on all xyz’s in the ChemSpaX output folder unless another folder is specified.
+The main functionalities are contained in run_workflow.py.</p>
+</section>
+<section id="descriptor-calculation-morfeus-cclib">
+<h3>Descriptor calculation (Morfeus/cclib)<a class="headerlink" href="#descriptor-calculation-morfeus-cclib" title="Link to this heading"></a></h3>
+<p><strong>Note: The descriptor calculator is currently only usable on Linux or Mac due to a dependency on xtb-python.</strong>
+The descriptor calculator is an automated method for calculating descriptors from either xyz files, Gaussian log files or CREST output folders.
+The descriptors are calculated using Morfeus and cclib. The descriptors are calculated for all files in the specified folder.
+The molecular_graph method will search for donor atoms (P,N or S) around the specified metal center (central atom) and assign numbering (min or max) based on the donor’s xTB partial charge.
+This numbering is then used to calculate steric, electronic and geometric descriptors.
+The main functionalities are contained in dft_extraction.py (cclib), descriptor_calculator.py (Morfeus/cclib) and run_workflow.py.</p>
+</section>
+</section>
+<section id="workflow-structure">
+<h2>Workflow Structure<a class="headerlink" href="#workflow-structure" title="Link to this heading"></a></h2>
+<section id="using-all-modules-at-once">
+<h3>Using all modules at once<a class="headerlink" href="#using-all-modules-at-once" title="Link to this heading"></a></h3>
+<p>You can run the whole workflow at once, like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span> <span class="o">=</span> <span class="n">Workflow</span><span class="p">(</span><span class="n">mace_input</span> <span class="o">=</span> <span class="n">mace_input</span><span class="p">,</span> <span class="n">chemspax_input</span> <span class="o">=</span> <span class="n">chemspax_input</span><span class="p">,</span> <span class="n">crest_input</span> <span class="o">=</span> <span class="n">crest_input</span><span class="p">,</span> <span class="n">path_to_workflow</span> <span class="o">=</span> <span class="s2">&quot;your/path/to/workflow_results&quot;</span><span class="p">)</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">run_workflow</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The input to the workflow class contains the input to MACE, input to ChemSpax, input to xTB/CREST and the descriptor calculator. The inputs should be given as below (the run_workflow.py file contains examples as well):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">obelix.run_workflow</span> <span class="kn">import</span> <span class="n">Workflow</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># preparation of input for MACE</span>
+<span class="n">ligand_excel_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;test_mace.xlsx&#39;</span><span class="p">)</span>  <span class="c1"># excel file with name of ligands for screening and their SMILES</span>
+<span class="n">auxiliary_ligands</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CC#[N:1]&#39;</span><span class="p">,</span> <span class="s1">&#39;CC#[N:1]&#39;</span><span class="p">]</span>  <span class="c1"># list of SMILES of auxiliary ligands (stay constant for all structures)</span>
+<span class="n">substrate</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CC#[N:1]&#39;</span><span class="p">]</span> <span class="c1">## for octahedral (OH) complexes it is possible to add a substrate (e.g. acetonitrile)</span>
+
+<span class="n">geom</span> <span class="o">=</span> <span class="s1">&#39;OH&#39;</span>  <span class="c1"># &#39;SP&#39; or &#39;OH&#39; for square planar or octahedral complexes</span>
+<span class="n">central_atom</span> <span class="o">=</span> <span class="s1">&#39;[Rh+]&#39;</span>  <span class="c1"># SMILES of central atom</span>
+<span class="n">names_of_xyz_key</span> <span class="o">=</span> <span class="s1">&#39;Cas&#39;</span>  <span class="c1"># column name of ligand names in excel file</span>
+
+
+<span class="c1"># MACE input </span>
+<span class="n">mace_input</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bidentate_ligands&#39;</span><span class="p">:</span> <span class="n">ligand_excel_file</span><span class="p">,</span> 
+                <span class="s1">&#39;auxiliary_ligands&#39;</span><span class="p">:</span> <span class="n">auxiliary_ligands</span><span class="p">,</span> 
+                <span class="s1">&#39;names_of_xyz&#39;</span><span class="p">:</span> <span class="n">names_of_xyz_key</span><span class="p">,</span> 
+                <span class="s1">&#39;central_atom&#39;</span><span class="p">:</span> <span class="n">central_atom</span><span class="p">,</span> 
+                <span class="s1">&#39;geom&#39;</span><span class="p">:</span> <span class="n">geom</span><span class="p">,</span> 
+                <span class="s1">&#39;substrate&#39;</span><span class="p">:</span> <span class="n">substrate</span><span class="p">}</span>
+
+<span class="c1"># preparation of input for ChemSpax</span>
+<span class="n">current_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;chemspax&quot;</span><span class="p">)</span>  <span class="c1"># navigate to the installed chemspax folder</span>
+<span class="n">path_to_substituents</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_directory</span><span class="p">,</span> <span class="s2">&quot;substituents_xyz&quot;</span><span class="p">)</span> <span class="c1"># path to folder with substituents</span>
+<span class="n">path_to_database</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_to_substituents</span><span class="p">,</span> <span class="s2">&quot;central_atom_centroid_database.csv&quot;</span><span class="p">)</span> <span class="c1"># path to database with substituents names</span>
+
+<span class="n">substituent_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s1">&#39;test_chemspax.xlsx&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>  <span class="c1"># excel file with substituents to place on skeleton (column names are indicated sites)</span>
+<span class="n">substituent_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">substituent_df</span><span class="p">[[</span><span class="s1">&#39;R1&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;R3&#39;</span><span class="p">,</span> <span class="s1">&#39;R4&#39;</span><span class="p">]])</span>  <span class="c1"># list of substituents that will be placed on either R1, R2, R3 or R4 for each skeleton</span>
+<span class="n">names</span> <span class="o">=</span> <span class="n">substituent_df</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span> <span class="c1"># names of skeletons (scaffolds) on which substituents will be placed</span>
+<span class="n">skeleton_list</span> <span class="o">=</span> <span class="n">substituent_df</span><span class="p">[</span><span class="s1">&#39;Functionalization&#39;</span><span class="p">]</span> <span class="c1"># number of the skeleton </span>
+<span class="n">path_to_hand_drawn_skeletons</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_directory</span><span class="p">,</span> <span class="s2">&quot;skeletons&quot;</span><span class="p">)</span>
+<span class="n">path_to_output</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_directory</span><span class="p">,</span> <span class="s2">&quot;complexes&quot;</span><span class="p">)</span>
+
+<span class="c1"># ChemSpax input</span>
+<span class="n">chemspax_input</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;substituent_list&#39;</span> <span class="p">:</span> <span class="n">substituent_list</span><span class="p">,</span> 
+                <span class="s1">&#39;path_to_database&#39;</span> <span class="p">:</span> <span class="n">path_to_database</span><span class="p">,</span> 
+                <span class="s1">&#39;path_to_substituents&#39;</span> <span class="p">:</span> <span class="n">path_to_substituents</span><span class="p">}</span>
+
+<span class="n">workflow</span> <span class="o">=</span> <span class="n">Workflow</span><span class="p">(</span><span class="n">mace_input</span> <span class="o">=</span> <span class="n">mace_input</span><span class="p">,</span> <span class="n">chemspax_input</span><span class="o">=</span><span class="n">chemspax_input</span><span class="p">,</span> <span class="n">path_to_workflow</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;/wf_test5&#39;</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="s1">&#39;BD&#39;</span><span class="p">)</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">prepare_folder_structure</span><span class="p">()</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">run_mace</span><span class="p">()</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">run_chemspax</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="n">functionalization_list</span><span class="o">=</span><span class="n">skeleton_list</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</section>
+<section id="using-the-modules-separately">
+<h3>Using the modules separately<a class="headerlink" href="#using-the-modules-separately" title="Link to this heading"></a></h3>
+<p>An example of doing only descriptor calculation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">obelix.run_workflow</span> <span class="kn">import</span> <span class="n">Workflow</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">descriptor_central_atom</span> <span class="o">=</span> <span class="s1">&#39;Rh&#39;</span> <span class="c1"># metal center of the complex</span>
+<span class="n">descriptor_metal_adduct</span> <span class="o">=</span> <span class="s1">&#39;pristine&#39;</span>  <span class="c1"># adduct connected to metal center, either &#39;pristine&#39; or &#39;nbd&#39;</span>
+<span class="c1"># extra descriptors are available if the adduct is &#39;nbd&#39; (norbornadiene)</span>
+<span class="n">descriptor_output_type</span> <span class="o">=</span> <span class="s1">&#39;xyz&#39;</span> <span class="c1"># output type of the descriptor calculator, either &#39;xyz&#39;, &#39;gaussian&#39; or &#39;crest&#39;</span>
+<span class="n">extract_xyz_from_log</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># if True, the xyz coordinates will be extracted from the Gaussian log file </span>
+<span class="n">descriptor_printout</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># if True, the descriptor calculator will print out the descriptors for each structure</span>
+<span class="n">solvent</span> <span class="o">=</span> <span class="s1">&#39;ch2cl2&#39;</span> <span class="c1"># solvent used in the calculation, see available solvents in xTB documentation</span>
+
+<span class="n">descriptor_input</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;central_atom&#39;</span><span class="p">:</span> <span class="n">descriptor_central_atom</span><span class="p">,</span>
+                    <span class="s1">&#39;metal_adduct&#39;</span><span class="p">:</span> <span class="n">descriptor_metal_adduct</span><span class="p">,</span>
+                    <span class="s1">&#39;output_type&#39;</span><span class="p">:</span> <span class="n">descriptor_output_type</span><span class="p">,</span>
+                    <span class="s1">&#39;extract_xyz_from_log&#39;</span><span class="p">:</span> <span class="n">extract_xyz_from_log</span><span class="p">,</span>
+                    <span class="s1">&#39;descriptor_printout&#39;</span><span class="p">:</span> <span class="n">descriptor_printout</span><span class="p">,</span>
+                    <span class="s1">&#39;solvent&#39;</span><span class="p">:</span> <span class="n">solvent</span><span class="p">}</span>
+
+<span class="n">workflow</span> <span class="o">=</span> <span class="n">Workflow</span><span class="p">(</span><span class="n">path_to_workflow</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;/Workflow&#39;</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="s1">&#39;SP&#39;</span><span class="p">,</span> <span class="n">descriptor_calculator_input</span><span class="o">=</span><span class="n">descriptor_input</span><span class="p">)</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">prepare_folder_structure</span><span class="p">()</span>
+<span class="n">descriptor_df</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">calculate_descriptors</span><span class="p">()</span>
+<span class="n">descriptor_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;descriptor_df_test.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Link to this heading"></a></h2>
+<p>WIP</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

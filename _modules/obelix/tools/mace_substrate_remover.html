@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>obelix.tools.mace_substrate_remover &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            obelix
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">obelix.tools.mace_substrate_remover</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for obelix.tools.mace_substrate_remover</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">obelix.run_workflow</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+<span class="kn">from</span> <span class="nn">rdkit.Chem.rdMolDescriptors</span> <span class="kn">import</span> <span class="n">CalcMolFormula</span>
+<span class="kn">from</span> <span class="nn">morfeus.io</span> <span class="kn">import</span> <span class="n">write_xyz</span>
+
+
+<div class="viewcode-block" id="remove_substrate">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/mace_substrate_remover/index.html#obelix.tools.mace_substrate_remover.remove_substrate">[docs]</a>
+<span class="k">def</span> <span class="nf">remove_substrate</span><span class="p">(</span><span class="n">substrate_SMILES</span><span class="p">,</span> <span class="n">ligand_keys</span><span class="p">,</span><span class="n">data_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; This function removes the substrate from MACE generated xyz files.</span>
+<span class="sd">    args:</span>
+<span class="sd">    substrate_SMILES: SMILES of substrate in list format</span>
+<span class="sd">    ligand_keys: name of ligands in list format, can be multiple ligands</span>
+<span class="sd">    data_path: path to xyz files, can contain multiple xyz files</span>
+<span class="sd">    metal_center: metal center of complexes in string format, used for convenient naming of new xyz file</span>
+<span class="sd">    return: xyz files without substrate, denoted wuth the suffix &quot;no_substrate&quot;, saved in a new directory called substrate_removed&quot;&quot;&quot;</span>
+
+    <span class="c1"># Create directory for xyz files without substrate</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s1">&#39;substrate_removed&#39;</span><span class="p">)):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s1">&#39;substrate_removed&#39;</span><span class="p">))</span>
+    
+    <span class="c1"># Convert substrate SMILES to molecular formula and extract atoms and counts</span>
+    <span class="n">substrate_mol</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">substrate_SMILES</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">substrate_mol</span> <span class="o">=</span> <span class="n">CalcMolFormula</span><span class="p">(</span><span class="n">substrate_mol</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Molecular formula of substrate: </span><span class="si">{</span><span class="n">substrate_mol</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">substrate_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Atom&#39;</span><span class="p">,</span> <span class="s1">&#39;Count&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">substrate_mol</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">():</span>
+            <span class="n">atom</span> <span class="o">=</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Standard count if no digit is found after the atom</span>
+
+            <span class="c1"># Check if the next character is a digit, if so, that will be the count of that specific atom</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">substrate_mol</span><span class="p">)</span> <span class="ow">and</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">substrate_mol</span><span class="p">)</span> <span class="ow">and</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span>
+                
+            <span class="c1"># Add new atom and count to substrate dataframe</span>
+            <span class="n">substrate_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">substrate_df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;Atom&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">atom</span><span class="p">],</span> <span class="s1">&#39;Count&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">count</span><span class="p">]})],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># If atom consits of multiple characters (e.g Cl), fix atom name and count</span>
+        <span class="k">if</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">islower</span><span class="p">():</span>
+            <span class="n">substrate_df</span><span class="p">[</span><span class="s1">&#39;Atom&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">substrate_mol</span><span class="p">)</span> <span class="ow">and</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="n">substrate_df</span><span class="p">[</span><span class="s1">&#39;Count&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">substrate_mol</span><span class="p">)</span> <span class="ow">and</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="n">substrate_df</span><span class="p">[</span><span class="s1">&#39;Count&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">substrate_mol</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Decomposed substrate: </span><span class="se">\n</span><span class="si">{</span><span class="n">substrate_df</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="c1"># Find number of hydrogen and non-hydrogen atoms in substrate</span>
+    <span class="n">H_count</span> <span class="o">=</span> <span class="n">substrate_df</span><span class="p">[</span><span class="s1">&#39;Count&#39;</span><span class="p">][</span><span class="n">substrate_df</span><span class="p">[</span><span class="s1">&#39;Atom&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">non_H_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">substrate_df</span><span class="p">[</span><span class="s1">&#39;Count&#39;</span><span class="p">])</span><span class="o">-</span><span class="n">H_count</span>
+    <span class="c1"># Import xyz files, remove substrate and write new xyz files</span>
+    <span class="k">for</span> <span class="n">ligand</span> <span class="ow">in</span> <span class="n">ligand_keys</span><span class="p">:</span>
+        <span class="n">xyz_file</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">data_path</span><span class="p">),</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">ligand</span><span class="o">+</span><span class="s1">&#39;*.xyz&#39;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xyz_file</span><span class="p">)):</span>
+            <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">read_xyz</span><span class="p">(</span><span class="n">xyz_file</span><span class="p">[</span><span class="n">f</span><span class="p">])</span>
+
+            <span class="c1"># Create dataframe from xyz file</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;Atom&#39;</span><span class="p">:</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;x-coordinates&#39;</span><span class="p">:</span><span class="n">y</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;y-coordinates&#39;</span><span class="p">:</span><span class="n">y</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;z-coordinates&#39;</span><span class="p">:</span><span class="n">y</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">2</span><span class="p">]})</span>
+            <span class="c1"># Find the index where hydrogen atoms connected to carbon start</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Atom&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span>
+                    <span class="n">hydrogen_index</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> 
+            <span class="c1"># Remove substrate H atoms from xyz</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">[:</span><span class="n">hydrogen_index</span><span class="p">],</span><span class="n">df</span><span class="p">[</span><span class="n">hydrogen_index</span><span class="o">+</span><span class="n">H_count</span><span class="p">:]],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># Remove substrate non-H atoms from xyz</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">non_H_count</span><span class="p">:]</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="c1"># Write new xyz file</span>
+            <span class="n">xyz_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">xyz_file</span><span class="p">[</span><span class="n">f</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.xyz&#39;</span><span class="p">,</span><span class="s1">&#39;_no_substrate.xyz&#39;</span><span class="p">)</span>
+            <span class="n">write_xyz</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s1">&#39;substrate_removed&#39;</span><span class="p">,</span> <span class="n">xyz_filename</span><span class="p">),</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Atom&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;x-coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;y-coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;z-coordinates&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+    <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Substrate removed for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ligand_keys</span><span class="p">)</span><span class="si">}</span><span class="s2"> ligands&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">))</span>
+<div class="viewcode-block" id="data_path">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/mace_substrate_remover/index.html#obelix.tools.mace_substrate_remover.data_path">[docs]</a>
+    <span class="n">data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span><span class="s1">&#39;acetonitrile&#39;</span><span class="p">,</span> <span class="s1">&#39;[Ru+2]&#39;</span><span class="p">,</span> <span class="s1">&#39;PP&#39;</span><span class="p">,</span> <span class="s1">&#39;MACE&#39;</span><span class="p">,</span><span class="s1">&#39;H-H_axial&#39;</span><span class="p">)</span></div>
+
+
+    <span class="n">smiles_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span><span class="s1">&#39;ligand_smiles&#39;</span><span class="p">,</span><span class="s1">&#39;ligand_smiles_non_ferrocenes.xlsx&#39;</span><span class="p">)</span>
+    <span class="n">smiles_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">smiles_path</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">ligand_number</span> <span class="o">=</span> <span class="n">smiles_df</span><span class="p">[</span><span class="s1">&#39;Ligand#&#39;</span><span class="p">]</span>
+
+    <span class="n">remove_substrate</span><span class="p">([</span><span class="s1">&#39;CC#[N:1]&#39;</span><span class="p">],</span> <span class="n">ligand_number</span><span class="p">,</span> <span class="n">data_path</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

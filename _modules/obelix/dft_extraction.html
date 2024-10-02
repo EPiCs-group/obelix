@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>obelix.dft_extraction &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            obelix
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">obelix.dft_extraction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for obelix.dft_extraction</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#                                                     #</span>
+<span class="c1">#  __author__ = Adarsh Kalikadien                     #</span>
+<span class="c1">#  __institution__ = TU Delft                         #</span>
+<span class="c1">#  __contact__ = a.v.kalikadien@tudelft.nl            #</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">obelix.tools.utilities</span> <span class="kn">import</span> <span class="n">get_bonded_atoms</span>
+<span class="kn">from</span> <span class="nn">morfeus.io</span> <span class="kn">import</span> <span class="n">read_cclib</span><span class="p">,</span> <span class="n">get_xyz_string</span><span class="p">,</span> <span class="n">read_xyz</span>
+<span class="kn">from</span> <span class="nn">morfeus.utils</span> <span class="kn">import</span> <span class="n">convert_elements</span>
+<span class="kn">import</span> <span class="nn">cclib</span>
+<span class="kn">from</span> <span class="nn">cclib.parser</span> <span class="kn">import</span> <span class="n">ccopen</span>
+<span class="kn">import</span> <span class="nn">rdkit</span>
+<span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+<span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">AllChem</span>
+<span class="kn">from</span> <span class="nn">openbabel</span> <span class="kn">import</span> <span class="n">openbabel</span>
+<span class="kn">import</span> <span class="nn">periodictable</span> <span class="k">as</span> <span class="nn">pt</span>
+<span class="c1"># from molSimplify.Classes.mol3D import mol3D  # ToDo: method for finding NBD indices using molsimplify</span>
+
+
+<div class="viewcode-block" id="NBDComplex">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.NBDComplex">[docs]</a>
+<span class="k">class</span> <span class="nc">NBDComplex</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for representing a M-NBD complex.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="NBDComplex.elements">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.NBDComplex.elements">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="n">elements</span></div>
+
+<div class="viewcode-block" id="NBDComplex.coordinates">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.NBDComplex.coordinates">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span></div>
+
+<div class="viewcode-block" id="NBDComplex.filename">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.NBDComplex.filename">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span></div>
+
+<div class="viewcode-block" id="NBDComplex.carbon_back_nbd_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.NBDComplex.carbon_back_nbd_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">carbon_back_nbd_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">15</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+
+        <span class="c1"># we need the xyz string to get the hydrogens bonded to this carbon</span>
+<div class="viewcode-block" id="NBDComplex.xyz_string">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.NBDComplex.xyz_string">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xyz_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">coordinates</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xyz_string</span> <span class="o">=</span> <span class="n">get_xyz_string</span><span class="p">(</span><span class="n">convert_elements</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="s1">&#39;symbols&#39;</span><span class="p">),</span> <span class="n">coord</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NBDComplex.find_nbd_indices_openbabel">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.NBDComplex.find_nbd_indices_openbabel">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_nbd_indices_openbabel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        NBD is normally at the bottom of the xyz/log file and has 15 atoms. But if this is not the case we</span>
+<span class="sd">        want to find the indices of the NBD atoms. This substructure search is done using Open Babel.</span>
+<span class="sd">        openbabel or RDKit representaiton of the M-NBD complex unfortunately does not work, so molsimplify can be used</span>
+<span class="sd">        in the future. This is WIP.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># ToDo: fix this function such that it returns correct indices</span>
+        <span class="c1"># Create an Open Babel molecule object from the XYZ string</span>
+        <span class="n">mol</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBMol</span><span class="p">()</span>
+        <span class="n">openbabel</span><span class="o">.</span><span class="n">OBConversion</span><span class="p">()</span><span class="o">.</span><span class="n">ReadString</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xyz_string</span><span class="p">)</span>
+        <span class="c1"># use molsimplify to load the molecule</span>
+        <span class="c1"># mol = mol3D()</span>
+        <span class="c1"># mol.readfromstring(self.xyz_string)</span>
+        <span class="c1"># mol.convert2OBMol()</span>
+        <span class="c1"># mol = mol.OBMol</span>
+
+        <span class="c1"># Define the SMILES string for norbornadiene</span>
+        <span class="n">norbornadiene_smiles</span> <span class="o">=</span> <span class="s2">&quot;C1C2CCC1CC2&quot;</span>
+
+        <span class="c1"># Generate the Open Babel molecule object for norbornadiene</span>
+        <span class="n">norbornadiene</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBMol</span><span class="p">()</span>
+        <span class="n">openbabel</span><span class="o">.</span><span class="n">OBConversion</span><span class="p">()</span><span class="o">.</span><span class="n">ReadString</span><span class="p">(</span><span class="n">norbornadiene</span><span class="p">,</span> <span class="n">norbornadiene_smiles</span><span class="p">)</span>
+
+        <span class="c1"># Find all instances of norbornadiene in the molecule</span>
+        <span class="n">norbornadiene_smarts</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBSmartsPattern</span><span class="p">()</span>
+        <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">Init</span><span class="p">(</span><span class="n">norbornadiene_smiles</span><span class="p">)</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">Match</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">GetUMapList</span><span class="p">():</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">match</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Define different SMILES string for norbornadiene</span>
+            <span class="n">norbornadiene_smiles</span> <span class="o">=</span> <span class="s2">&quot;C1C2C=CC1C=C2&quot;</span>
+
+            <span class="c1"># Generate the Open Babel molecule object for norbornadiene</span>
+            <span class="n">norbornadiene</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBMol</span><span class="p">()</span>
+            <span class="n">openbabel</span><span class="o">.</span><span class="n">OBConversion</span><span class="p">()</span><span class="o">.</span><span class="n">ReadString</span><span class="p">(</span><span class="n">norbornadiene</span><span class="p">,</span> <span class="n">norbornadiene_smiles</span><span class="p">)</span>
+
+            <span class="c1"># Find all instances of norbornadiene in the molecule</span>
+            <span class="n">norbornadiene_smarts</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBSmartsPattern</span><span class="p">()</span>
+            <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">Init</span><span class="p">(</span><span class="n">norbornadiene_smiles</span><span class="p">)</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">Match</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">GetUMapList</span><span class="p">():</span>
+                    <span class="k">return</span> <span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">match</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="NBDComplex.find_central_carbon_and_hydrogens_nbd_openbabel">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.NBDComplex.find_central_carbon_and_hydrogens_nbd_openbabel">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_central_carbon_and_hydrogens_nbd_openbabel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        NBD is normally at the bottom of the xyz/log file and has 15 atoms. But if this is not the case we</span>
+<span class="sd">        want to find the indices of the NBD atoms. This substructure search is done using Open Babel. In this</span>
+<span class="sd">        substructre we can then find the central carbon and the two hydrogens bonded to it.</span>
+<span class="sd">        openbabel or RDKit representaiton of the M-NBD complex unfortunately does not work, so molsimplify can be used</span>
+<span class="sd">        in the future. This is WIP.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create an Open Babel molecule object from the XYZ string</span>
+        <span class="n">mol</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBMol</span><span class="p">()</span>
+        <span class="n">openbabel</span><span class="o">.</span><span class="n">OBConversion</span><span class="p">()</span><span class="o">.</span><span class="n">ReadString</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xyz_string</span><span class="p">)</span>
+        <span class="c1"># use molsimplify to load the molecule</span>
+        <span class="c1"># mol = mol3D()</span>
+        <span class="c1"># mol.readfromstring(self.xyz_string)</span>
+        <span class="c1"># mol.convert2OBMol()</span>
+        <span class="c1"># mol = mol.OBMol</span>
+
+        <span class="c1"># Define the SMILES string for norbornadiene</span>
+        <span class="n">norbornadiene_smiles</span> <span class="o">=</span> <span class="s2">&quot;C1C2CCC1CC2&quot;</span>
+
+        <span class="c1"># Generate the Open Babel molecule object for norbornadiene</span>
+        <span class="n">norbornadiene</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBMol</span><span class="p">()</span>
+        <span class="n">openbabel</span><span class="o">.</span><span class="n">OBConversion</span><span class="p">()</span><span class="o">.</span><span class="n">ReadString</span><span class="p">(</span><span class="n">norbornadiene</span><span class="p">,</span> <span class="n">norbornadiene_smiles</span><span class="p">)</span>
+
+        <span class="c1"># Find all instances of norbornadiene in the molecule</span>
+        <span class="n">norbornadiene_smarts</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBSmartsPattern</span><span class="p">()</span>
+        <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">Init</span><span class="p">(</span><span class="n">norbornadiene_smiles</span><span class="p">)</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">Match</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">GetUMapList</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">m_index</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="n">hydrogen_indices</span> <span class="o">=</span> <span class="n">get_bonded_atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz_string</span><span class="p">,</span> <span class="n">m_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hydrogen_indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="p">[</span><span class="n">m_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hydrogen_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hydrogen_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Define different SMILES string for norbornadiene</span>
+            <span class="n">norbornadiene_smiles</span> <span class="o">=</span> <span class="s2">&quot;C1C2C=CC1C=C2&quot;</span>
+
+            <span class="c1"># Generate the Open Babel molecule object for norbornadiene</span>
+            <span class="n">norbornadiene</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBMol</span><span class="p">()</span>
+            <span class="n">openbabel</span><span class="o">.</span><span class="n">OBConversion</span><span class="p">()</span><span class="o">.</span><span class="n">ReadString</span><span class="p">(</span><span class="n">norbornadiene</span><span class="p">,</span> <span class="n">norbornadiene_smiles</span><span class="p">)</span>
+
+            <span class="c1"># Find all instances of norbornadiene in the molecule</span>
+            <span class="n">norbornadiene_smarts</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBSmartsPattern</span><span class="p">()</span>
+            <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">Init</span><span class="p">(</span><span class="n">norbornadiene_smiles</span><span class="p">)</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">Match</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">norbornadiene_smarts</span><span class="o">.</span><span class="n">GetUMapList</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">m_index</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+                        <span class="n">hydrogen_indices</span> <span class="o">=</span> <span class="n">get_bonded_atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz_string</span><span class="p">,</span> <span class="n">m_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hydrogen_indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="p">[</span><span class="n">m_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hydrogen_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hydrogen_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="NBDComplex.check_nbd_back_carbon">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.NBDComplex.check_nbd_back_carbon">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_nbd_back_carbon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the carbon atom at the back of the NBD is bonded to two hydrogens. If so, return the index of the carbon</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># ToDo: build some more checks in here before returning the idx</span>
+        <span class="n">hydrogens_bonded_to_carbon_back_nbd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hydrogens_bonded_to_carbon_back_nbd</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">hydrogens_bonded_to_carbon_back_nbd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hydrogens_bonded_to_carbon_back_nbd</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">carbon_back_nbd_idx</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="NBDComplex.get_hydrogens_bonded_to_carbon_back_nbd">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.NBDComplex.get_hydrogens_bonded_to_carbon_back_nbd">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_hydrogens_bonded_to_carbon_back_nbd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the indices of the two hydrogens bonded to the carbon in the back of the NBD molecule.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get the hydrogen indices</span>
+        <span class="n">hydrogen_indices</span> <span class="o">=</span> <span class="n">get_bonded_atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz_string</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">carbon_back_nbd_idx</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># 1 is the hydrogen atom</span>
+        <span class="c1"># this gives a list of atomic number and index, we only want the index</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hydrogen_indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">hydrogen_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hydrogen_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2"> does not have 2 hydrogens bonded to the carbon in the back of the nbd molecule. This is needed for dihedral angle calculation. Skipping this molecule.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DFTExtractor">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor">[docs]</a>
+<span class="k">class</span> <span class="nc">DFTExtractor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extracts data from a Gaussian log file using cclib. This class is used to extract the data from the log file and</span>
+<span class="sd">    return the values. These are then correctly formatted and parsed in descriptor_calculator.py</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_file</span><span class="p">,</span> <span class="n">metal_center_idx</span><span class="p">,</span> <span class="n">min_donor_idx</span><span class="p">,</span> <span class="n">max_donor_idx</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="s1">&#39;pristine&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="DFTExtractor.log_file">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.log_file">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_file</span> <span class="o">=</span> <span class="n">log_file</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.supported_metal_adducts">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.supported_metal_adducts">[docs]</a>
+        <span class="n">supported_metal_adducts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pristine&#39;</span><span class="p">,</span> <span class="s1">&#39;acetonitrile&#39;</span><span class="p">,</span> <span class="s1">&#39;nbd&#39;</span><span class="p">]</span>  <span class="c1"># norbornadiene is placed at bottom of xyz file, so it is a useful pointer for quadrant analysis</span></div>
+
+        <span class="k">if</span> <span class="n">metal_adduct</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported_metal_adducts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Metal adduct </span><span class="si">{</span><span class="n">metal_adduct</span><span class="si">}</span><span class="s2"> not supported. Please choose from </span><span class="si">{</span><span class="n">supported_metal_adducts</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="DFTExtractor.metal_adduct">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.metal_adduct">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metal_adduct</span> <span class="o">=</span> <span class="n">metal_adduct</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
+
+
+        <span class="c1"># use cclib parser</span>
+<div class="viewcode-block" id="DFTExtractor.parser">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.parser">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">ccopen</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DFTExtractor.data">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.data">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DFTExtractor.meta_data">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.meta_data">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">metadata</span></div>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_normal_termination</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: </span><span class="si">{</span><span class="n">log_file</span><span class="si">}</span><span class="s2"> did not terminate normally!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># check whether the dft calculation is an optimization or a single point calculation</span>
+        <span class="c1"># we can test this by seeing if data has a vibfreqs attribute</span>
+<div class="viewcode-block" id="DFTExtractor.freq_calculation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.freq_calculation">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq_calculation</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;vibfreqs&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">freq_calculation</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="DFTExtractor.atom_charges_dict">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.atom_charges_dict">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atom_charges_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">atomcharges</span></div>
+
+        <span class="c1"># use morfeus parser (in case it&#39;s needed)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">read_cclib</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># if this is true, there is only 1 coordinates array</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># else morfeus descriptors are calculated for last geometry in log file</span>
+<div class="viewcode-block" id="DFTExtractor.elements">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.elements">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span></div>
+
+
+        <span class="c1"># get index of nbd C in back of molecule which we use as indicator for z-axis</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_adduct</span> <span class="o">==</span> <span class="s1">&#39;nbd&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nbd_complex</span> <span class="o">=</span> <span class="n">NBDComplex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">log_file</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">carbon_back_nbd_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbd_complex</span><span class="o">.</span><span class="n">carbon_back_nbd_idx</span>
+
+        <span class="c1"># idx&#39;s come from morfeus, so they start at 1, subtract 1 to get the correct index for cclib</span>
+        <span class="c1"># it is possible that a free ligand is passed that does not have a metal center idx</span>
+        <span class="c1"># individually the min and max donor idx can be None as well when initializing the free ligand&#39;s DFTExtractor</span>
+<div class="viewcode-block" id="DFTExtractor.metal_center_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.metal_center_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+        <span class="k">if</span> <span class="n">metal_center_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span> <span class="o">=</span> <span class="n">metal_center_idx</span> <span class="o">-</span> <span class="mi">1</span>
+<div class="viewcode-block" id="DFTExtractor.min_donor_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.min_donor_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+        <span class="k">if</span> <span class="n">min_donor_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span> <span class="o">=</span> <span class="n">min_donor_idx</span> <span class="o">-</span> <span class="mi">1</span>
+<div class="viewcode-block" id="DFTExtractor.max_donor_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.max_donor_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+        <span class="k">if</span> <span class="n">max_donor_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span> <span class="o">=</span> <span class="n">max_donor_idx</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="c1"># find elements of the metal center and the min and max donor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="n">convert_elements</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;symbols&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_donor_element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_donor_element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span><span class="p">]</span>
+
+        <span class="c1"># read the log file for extraction</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_file_text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DFTExtractor.check_normal_termination">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.check_normal_termination">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_normal_termination</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">success</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.check_nbd_back_carbon">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.check_nbd_back_carbon">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_nbd_back_carbon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># ToDo: build some more checks in here before returning the idx</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_adduct</span> <span class="o">==</span> <span class="s1">&#39;nbd&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbd_complex</span><span class="o">.</span><span class="n">check_nbd_back_carbon</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.get_hydrogens_bonded_to_carbon_back_nbd">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.get_hydrogens_bonded_to_carbon_back_nbd">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_hydrogens_bonded_to_carbon_back_nbd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_adduct</span> <span class="o">==</span> <span class="s1">&#39;nbd&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbd_complex</span><span class="o">.</span><span class="n">get_hydrogens_bonded_to_carbon_back_nbd</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_time">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">wall_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;wall_time&#39;</span><span class="p">]</span>
+        <span class="n">cpu_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;cpu_time&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">wall_time</span><span class="p">,</span> <span class="n">cpu_time</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_homo_lumo_gap">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_homo_lumo_gap">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_homo_lumo_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">homo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">homos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">energies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">moenergies</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">lumo_energy</span> <span class="o">=</span> <span class="n">energies</span><span class="p">[</span><span class="n">homo</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">homo_energy</span> <span class="o">=</span> <span class="n">energies</span><span class="p">[</span><span class="n">homo</span><span class="p">]</span>
+        <span class="n">homo_lumo_gap</span> <span class="o">=</span> <span class="n">lumo_energy</span> <span class="o">-</span> <span class="n">homo_energy</span>
+        <span class="k">return</span> <span class="n">homo_energy</span><span class="p">,</span> <span class="n">lumo_energy</span><span class="p">,</span> <span class="n">homo_lumo_gap</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_natural_charges_cclib">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_natural_charges_cclib">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_natural_charges_cclib</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Uses cclib to extract the natural charge from a Gaussian log file, in cclib only the 1st table</span>
+        <span class="c1"># from the log file is read because people usually do a SP DFT calculation for NBO</span>
+        <span class="c1"># if however you do an optimization and NBO calculation at the same time, you need the last table</span>
+        <span class="c1"># since only the last table shows NBO on the opt and freq output</span>
+        <span class="n">natural_charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_charges_dict</span><span class="p">[</span><span class="s1">&#39;natural&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">natural_charges</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_natural_charges">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_natural_charges">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_natural_charges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># code from cclib (https://github.com/cclib/cclib/blob/master/cclib/parser/gaussianparser.py)</span>
+        <span class="c1"># but always reads the last NBO table for natural charges, works thus for SP and full DFT opt log files</span>
+        <span class="c1"># Note, be cautious with open shell systems. There, the last table contains the beta spin orbitals, so you need</span>
+        <span class="c1"># the 1st table instead</span>
+        <span class="n">inputfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_file_text</span>
+        <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">inputfile</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Natural Population&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;atomcharges&#39;</span><span class="p">):</span>
+                    <span class="c1"># if the atomcharges attribute for the cclib data object does not exist, create it</span>
+                    <span class="c1"># very unlikely that this happens, but just in case</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">atomcharges</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">line1</span> <span class="o">=</span> <span class="n">inputfile</span><span class="p">[</span><span class="n">line_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">line2</span> <span class="o">=</span> <span class="n">inputfile</span><span class="p">[</span><span class="n">line_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+                <span class="c1"># use line 1 and 2 to check if this is the correct table</span>
+                <span class="k">if</span> <span class="n">line1</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Natural&#39;</span> <span class="ow">and</span> <span class="n">line2</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Charge&#39;</span><span class="p">:</span>
+                    <span class="n">dashes</span> <span class="o">=</span> <span class="n">inputfile</span><span class="p">[</span><span class="n">line_index</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+                    <span class="n">charges</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="mi">3</span>
+                    <span class="c1"># read the charge table below the dashes for as long as there are atoms</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)):</span>
+                        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">nline</span> <span class="o">=</span> <span class="n">inputfile</span><span class="p">[</span><span class="n">line_index</span> <span class="o">+</span> <span class="n">count</span><span class="p">]</span>
+                        <span class="n">charges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">nline</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">2</span><span class="p">]))</span>
+                    <span class="c1"># each table replaces the previous one, so the last table is the one we want</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">atom_charges_dict</span><span class="p">[</span><span class="s2">&quot;natural&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">charges</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_charges_dict</span><span class="p">[</span><span class="s1">&#39;natural&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_mulliken_charges">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_mulliken_charges">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_mulliken_charges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">atomic_charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_charges_dict</span><span class="p">[</span><span class="s1">&#39;mulliken&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">atomic_charges</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_dipole_moment">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_dipole_moment">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_dipole_moment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dipole_moment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">moments</span>
+        <span class="k">return</span> <span class="n">dipole_moment</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_dispersion_energies">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_dispersion_energies">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_dispersion_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dispersion_energies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dispersionenergies</span>
+        <span class="k">return</span> <span class="n">dispersion_energies</span></div>
+
+
+    <span class="c1"># def extract_natural_orbital_coefficients(self):</span>
+    <span class="c1">#     natural_orbital_coefficients = self.data.nocoeffs</span>
+    <span class="c1">#     return natural_orbital_coefficients</span>
+
+<div class="viewcode-block" id="DFTExtractor.extract_donor_metal_antibonding_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_donor_metal_antibonding_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_donor_metal_antibonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">donor_element</span><span class="p">,</span> <span class="n">donor_idx</span><span class="p">,</span> <span class="n">metal_center_element</span><span class="p">,</span> <span class="n">metal_center_idx</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_file_text</span>
+        <span class="n">donor_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">nbo_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;NBO                        Occupancy    Energy   (geminal,vicinal,remote)&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">nbo_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_index</span><span class="p">)</span>
+        <span class="n">end_nbo_search_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="c1"># every nbo summary ends with two lines of &quot;       -------------------------------&quot;</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;[ ]</span><span class="si">{7}</span><span class="s2">-------------------------------&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                <span class="n">end_nbo_search_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_index</span><span class="p">)</span>
+        <span class="c1"># from each pair we only need the first one to mark the end of the nbo summary</span>
+        <span class="n">end_nbo_search_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">end_nbo_search_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">end_nbo_search_indices</span><span class="p">),</span> <span class="mi">2</span><span class="p">)]</span>
+
+        <span class="c1"># antibonding orbital for min donor</span>
+        <span class="k">for</span> <span class="n">nr_of_nbo_summary_found</span><span class="p">,</span> <span class="n">nbo_index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nbo_indices</span><span class="p">):</span>
+            <span class="n">search_this_area</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">nbo_index</span><span class="p">:</span><span class="n">end_nbo_search_indices</span><span class="p">[</span>
+                <span class="n">nr_of_nbo_summary_found</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">nr_of_nbo_summary_found</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nbo_indices</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="n">nbo_index</span><span class="p">:]</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">search_this_area</span><span class="p">:</span>
+                <span class="n">pattern</span> <span class="o">=</span> <span class="s2">&quot;BD\*\(\s+1\)&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">donor_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">donor_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">\s&quot;</span> <span class="o">+</span> <span class="s2">&quot;[-]&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metal_center_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metal_center_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;.*[\d\s!@#</span><span class="se">\\</span><span class="s2">$%</span><span class="se">\\</span><span class="s2">^</span><span class="se">\\</span><span class="s2">&amp;*</span><span class="se">\\</span><span class="s2">)</span><span class="se">\\</span><span class="s2">(+=._-]$&quot;</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                    <span class="n">donor_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="c1"># print(line)</span>
+                <span class="n">second_pattern</span> <span class="o">=</span> <span class="s2">&quot;BD\*\(\s+1\)&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metal_center_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metal_center_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">\s&quot;</span> <span class="o">+</span> <span class="s2">&quot;[-]&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;\s+</span><span class="si">{</span><span class="n">donor_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">donor_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;.*[\d\s!@#</span><span class="se">\\</span><span class="s2">$%</span><span class="se">\\</span><span class="s2">^</span><span class="se">\\</span><span class="s2">&amp;*</span><span class="se">\\</span><span class="s2">)</span><span class="se">\\</span><span class="s2">(+=._-]$&quot;</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">second_pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                    <span class="n">donor_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="c1"># print(line)</span>
+
+        <span class="c1"># only digits are important</span>
+        <span class="n">donor_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;[^\d\.]&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">line_</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">line_</span> <span class="ow">in</span> <span class="n">donor_lines</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">donor_lines</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">donor_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_donor_metal_bonding_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_donor_metal_bonding_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_donor_metal_bonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">donor_element</span><span class="p">,</span> <span class="n">donor_idx</span><span class="p">,</span> <span class="n">metal_center_element</span><span class="p">,</span> <span class="n">metal_center_idx</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_file_text</span>
+        <span class="n">donor_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">nbo_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;NBO                        Occupancy    Energy   (geminal,vicinal,remote)&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">nbo_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_index</span><span class="p">)</span>
+        <span class="n">end_nbo_search_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="c1"># every nbo summary ends with two lines of &quot;       -------------------------------&quot;</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;[ ]</span><span class="si">{7}</span><span class="s2">-------------------------------&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                <span class="n">end_nbo_search_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_index</span><span class="p">)</span>
+            <span class="c1"># from each pair we only need the first one to mark the end of the nbo summary</span>
+        <span class="n">end_nbo_search_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">end_nbo_search_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">end_nbo_search_indices</span><span class="p">),</span> <span class="mi">2</span><span class="p">)]</span>
+
+        <span class="c1"># bonding orbital for min donor</span>
+        <span class="k">for</span> <span class="n">nr_of_nbo_summary_found</span><span class="p">,</span> <span class="n">nbo_index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nbo_indices</span><span class="p">):</span>
+            <span class="n">search_this_area</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">nbo_index</span><span class="p">:</span><span class="n">end_nbo_search_indices</span><span class="p">[</span>
+                <span class="n">nr_of_nbo_summary_found</span><span class="p">]]</span> <span class="k">if</span> <span class="n">nr_of_nbo_summary_found</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nbo_indices</span><span class="p">)</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="n">nbo_index</span><span class="p">:]</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">search_this_area</span><span class="p">:</span>
+                <span class="n">pattern</span> <span class="o">=</span> <span class="s2">&quot;BD\s\(\s+1\)&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">donor_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">donor_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">\s&quot;</span> <span class="o">+</span> <span class="s2">&quot;[-]&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metal_center_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metal_center_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;.*[\d\s!@#</span><span class="se">\\</span><span class="s2">$%</span><span class="se">\\</span><span class="s2">^</span><span class="se">\\</span><span class="s2">&amp;*</span><span class="se">\\</span><span class="s2">)</span><span class="se">\\</span><span class="s2">(+=._-]$&quot;</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                    <span class="n">donor_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="n">second_pattern</span> <span class="o">=</span> <span class="s2">&quot;BD\s\(\s+1\)&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metal_center_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metal_center_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">\s&quot;</span> <span class="o">+</span> <span class="s2">&quot;[-]&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;\s+</span><span class="si">{</span><span class="n">donor_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">donor_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;.*[\d\s!@#</span><span class="se">\\</span><span class="s2">$%</span><span class="se">\\</span><span class="s2">^</span><span class="se">\\</span><span class="s2">&amp;*</span><span class="se">\\</span><span class="s2">)</span><span class="se">\\</span><span class="s2">(+=._-]$&quot;</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">second_pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                    <span class="n">donor_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="c1"># only digits are important</span>
+        <span class="n">donor_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;[^\d\.]&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">line_</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">line_</span> <span class="ow">in</span> <span class="n">donor_lines</span><span class="p">]</span>
+
+        <span class="c1"># we are only interested in the last iteration, so we take the last element of the list</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">donor_lines</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">donor_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_donor_other_element_antibonding_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_donor_other_element_antibonding_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_donor_other_element_antibonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">donor_element</span><span class="p">,</span> <span class="n">donor_idx</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_file_text</span>
+        <span class="n">donor_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">nbo_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;NBO                        Occupancy    Energy   (geminal,vicinal,remote)&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">nbo_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_index</span><span class="p">)</span>
+        <span class="n">end_nbo_search_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="c1"># every nbo summary ends with two lines of &quot;       -------------------------------&quot;</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;[ ]</span><span class="si">{7}</span><span class="s2">-------------------------------&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                <span class="n">end_nbo_search_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_index</span><span class="p">)</span>
+            <span class="c1"># from each pair we only need the first one to mark the end of the nbo summary</span>
+        <span class="n">end_nbo_search_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">end_nbo_search_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">end_nbo_search_indices</span><span class="p">),</span> <span class="mi">2</span><span class="p">)]</span>
+        <span class="c1"># bonding orbital for min donor</span>
+        <span class="k">for</span> <span class="n">nr_of_nbo_summary_found</span><span class="p">,</span> <span class="n">nbo_index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nbo_indices</span><span class="p">):</span>
+            <span class="n">search_this_area</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">nbo_index</span><span class="p">:</span><span class="n">end_nbo_search_indices</span><span class="p">[</span>
+                <span class="n">nr_of_nbo_summary_found</span><span class="p">]]</span> <span class="k">if</span> <span class="n">nr_of_nbo_summary_found</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">end_nbo_search_indices</span><span class="p">)</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="n">nbo_index</span><span class="p">:]</span>
+
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">search_this_area</span><span class="p">:</span>
+                <span class="n">pattern</span> <span class="o">=</span> <span class="s2">&quot;BD\*\(\s+1\)&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">donor_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">donor_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">\s&quot;</span> <span class="o">+</span> <span class="s2">&quot;[-]&quot;</span> <span class="o">+</span> <span class="s2">&quot;\s[CONHP]\s+&quot;</span> <span class="o">+</span> <span class="s2">&quot;.*[\d\s!@#</span><span class="se">\\</span><span class="s2">$%</span><span class="se">\\</span><span class="s2">^</span><span class="se">\\</span><span class="s2">&amp;*</span><span class="se">\\</span><span class="s2">)</span><span class="se">\\</span><span class="s2">(+=._-]$&quot;</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                    <span class="n">donor_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="n">second_pattern</span> <span class="o">=</span> <span class="s2">&quot;BD\*\(\s+1\)&quot;</span> <span class="o">+</span> <span class="s2">&quot; [CONHP]\s+&quot;</span> <span class="o">+</span> <span class="s2">&quot;\d{1,2}\s&quot;</span> <span class="o">+</span> <span class="s2">&quot;[-]&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;\s+</span><span class="si">{</span><span class="n">donor_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">donor_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;.*[\d\s!@#</span><span class="se">\\</span><span class="s2">$%</span><span class="se">\\</span><span class="s2">^</span><span class="se">\\</span><span class="s2">&amp;*</span><span class="se">\\</span><span class="s2">)</span><span class="se">\\</span><span class="s2">(+=._-]$&quot;</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">second_pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                    <span class="n">donor_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="c1"># if donor is P, there are 3 other bonds, so from the last 3 lines we take the values</span>
+        <span class="k">if</span> <span class="n">donor_element</span> <span class="o">==</span> <span class="s2">&quot;P&quot;</span><span class="p">:</span>
+            <span class="n">donor_lines</span> <span class="o">=</span> <span class="n">donor_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
+        <span class="c1"># if donor is S, there are 2 other bonds, so from the last 2 lines we take the values</span>
+        <span class="k">elif</span> <span class="n">donor_element</span> <span class="o">==</span> <span class="s2">&quot;S&quot;</span><span class="p">:</span>
+            <span class="n">donor_lines</span> <span class="o">=</span> <span class="n">donor_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="c1"># if donor is N, there are 2 other bonds, so from the last 2 lines we take the values</span>
+        <span class="k">elif</span> <span class="n">donor_element</span> <span class="o">==</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span>
+            <span class="n">donor_lines</span> <span class="o">=</span> <span class="n">donor_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="c1"># if donor is O, there is 1 other bond, so from the last 1 line we take the values</span>
+        <span class="k">elif</span> <span class="n">donor_element</span> <span class="o">==</span> <span class="s2">&quot;O&quot;</span><span class="p">:</span>
+            <span class="n">donor_lines</span> <span class="o">=</span> <span class="n">donor_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Donor element not supported&quot;</span><span class="p">)</span>
+
+        <span class="c1"># get other element and index of that element</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="s2">&quot;[CONHP]\s+\d{1,2}&quot;</span>
+        <span class="n">other_element_and_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">line_</span><span class="p">)</span> <span class="k">for</span> <span class="n">line_</span> <span class="ow">in</span> <span class="n">donor_lines</span><span class="p">]</span>
+        <span class="n">flat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">other_element_and_index</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
+        <span class="c1"># remove the donor element and idx from the list</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">donor_element</span><span class="si">}</span><span class="s2">\s+</span><span class="si">{</span><span class="n">donor_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">other_element_and_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">flat_list</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))]</span>
+
+        <span class="c1"># get occupation values by getting only digits from the lines</span>
+        <span class="n">occupation_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;[^\d\.]&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">line_</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">line_</span> <span class="ow">in</span> <span class="n">donor_lines</span><span class="p">]</span>
+        <span class="n">occupation_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">occupation_values</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">donor_lines</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">occupation_values</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other_element_and_index</span><span class="p">):</span>
+                <span class="c1"># other element and index is a list of lists for each element, occupation_values is a list</span>
+                <span class="k">return</span> <span class="n">other_element_and_index</span><span class="p">,</span> <span class="n">occupation_values</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Length of other element and index list and occupation value list is not equal&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_donor_other_element_bonding_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_donor_other_element_bonding_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_donor_other_element_bonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">donor_element</span><span class="p">,</span> <span class="n">donor_idx</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_file_text</span>
+        <span class="n">donor_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">nbo_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;NBO                        Occupancy    Energy   (geminal,vicinal,remote)&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">nbo_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_index</span><span class="p">)</span>
+        <span class="n">end_nbo_search_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="c1"># every nbo summary ends with two lines of &quot;       -------------------------------&quot;</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;[ ]</span><span class="si">{7}</span><span class="s2">-------------------------------&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                <span class="n">end_nbo_search_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_index</span><span class="p">)</span>
+            <span class="c1"># from each pair we only need the first one to mark the end of the nbo summary</span>
+        <span class="n">end_nbo_search_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">end_nbo_search_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">end_nbo_search_indices</span><span class="p">),</span> <span class="mi">2</span><span class="p">)]</span>
+        <span class="c1"># bonding orbital for min donor</span>
+        <span class="k">for</span> <span class="n">nr_of_nbo_summary_found</span><span class="p">,</span> <span class="n">nbo_index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nbo_indices</span><span class="p">):</span>
+            <span class="n">search_this_area</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">nbo_index</span><span class="p">:</span><span class="n">end_nbo_search_indices</span><span class="p">[</span>
+                <span class="n">nr_of_nbo_summary_found</span><span class="p">]]</span> <span class="k">if</span> <span class="n">nr_of_nbo_summary_found</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">end_nbo_search_indices</span><span class="p">)</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="n">nbo_index</span><span class="p">:]</span>
+
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">search_this_area</span><span class="p">:</span>
+                <span class="n">pattern</span> <span class="o">=</span> <span class="s2">&quot;BD\s\(\s+1\)&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">donor_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">donor_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">\s&quot;</span> <span class="o">+</span> <span class="s2">&quot;[-]&quot;</span> <span class="o">+</span> <span class="s2">&quot;\s[CONHP]\s+&quot;</span> <span class="o">+</span> <span class="s2">&quot;.*[\d\s!@#</span><span class="se">\\</span><span class="s2">$%</span><span class="se">\\</span><span class="s2">^</span><span class="se">\\</span><span class="s2">&amp;*</span><span class="se">\\</span><span class="s2">)</span><span class="se">\\</span><span class="s2">(+=._-]$&quot;</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                    <span class="n">donor_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="n">second_pattern</span> <span class="o">=</span> <span class="s2">&quot;BD\s\(\s+1\)&quot;</span> <span class="o">+</span> <span class="s2">&quot; [CONHP]\s+&quot;</span> <span class="o">+</span> <span class="s2">&quot;\d{1,2}\s&quot;</span> <span class="o">+</span> <span class="s2">&quot;[-]&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;\s+</span><span class="si">{</span><span class="n">donor_element</span><span class="si">}</span><span class="s2">\s+&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">donor_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;.*[\d\s!@#</span><span class="se">\\</span><span class="s2">$%</span><span class="se">\\</span><span class="s2">^</span><span class="se">\\</span><span class="s2">&amp;*</span><span class="se">\\</span><span class="s2">)</span><span class="se">\\</span><span class="s2">(+=._-]$&quot;</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">second_pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                    <span class="n">donor_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="c1"># if donor is P, there are 3 other bonds, so from the last 3 lines we take the values</span>
+        <span class="k">if</span> <span class="n">donor_element</span> <span class="o">==</span> <span class="s2">&quot;P&quot;</span><span class="p">:</span>
+            <span class="n">donor_lines</span> <span class="o">=</span> <span class="n">donor_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
+        <span class="c1"># if donor is S, there are 2 other bonds, so from the last 2 lines we take the values</span>
+        <span class="k">elif</span> <span class="n">donor_element</span> <span class="o">==</span> <span class="s2">&quot;S&quot;</span><span class="p">:</span>
+            <span class="n">donor_lines</span> <span class="o">=</span> <span class="n">donor_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="c1"># if donor is N, there are 2 other bonds, so from the last 2 lines we take the values</span>
+        <span class="k">elif</span> <span class="n">donor_element</span> <span class="o">==</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span>
+            <span class="n">donor_lines</span> <span class="o">=</span> <span class="n">donor_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="c1"># if donor is O, there is 1 other bond, so from the last 1 line we take the values</span>
+        <span class="k">elif</span> <span class="n">donor_element</span> <span class="o">==</span> <span class="s2">&quot;O&quot;</span><span class="p">:</span>
+            <span class="n">donor_lines</span> <span class="o">=</span> <span class="n">donor_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Donor element not supported&quot;</span><span class="p">)</span>
+
+        <span class="c1"># get other element and index of that element</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="s2">&quot;[CONHP]\s+\d{1,2}&quot;</span>
+        <span class="n">other_element_and_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">line_</span><span class="p">)</span> <span class="k">for</span> <span class="n">line_</span> <span class="ow">in</span> <span class="n">donor_lines</span><span class="p">]</span>
+        <span class="n">flat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">other_element_and_index</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
+        <span class="c1"># remove the donor element and idx from the list</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">donor_element</span><span class="si">}</span><span class="s2">\s+</span><span class="si">{</span><span class="n">donor_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">other_element_and_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">flat_list</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))]</span>
+
+        <span class="c1"># get occupation values by getting only digits from the lines</span>
+        <span class="n">occupation_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;[^\d\.]&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">line_</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">line_</span> <span class="ow">in</span> <span class="n">donor_lines</span><span class="p">]</span>
+        <span class="n">occupation_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">occupation_values</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">donor_lines</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">occupation_values</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other_element_and_index</span><span class="p">):</span>
+                <span class="c1"># other element and index is a list of lists for each element, occupation_values is a list</span>
+                <span class="k">return</span> <span class="n">other_element_and_index</span><span class="p">,</span> <span class="n">occupation_values</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Length of other element and index list and occupation value list is not equal&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_donor_lone_pair_occupancy">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_donor_lone_pair_occupancy">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_donor_lone_pair_occupancy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom_type_min</span><span class="p">,</span> <span class="n">atom_type_max</span><span class="p">):</span>
+        <span class="c1"># Count nr of times &quot; NATURAL POPULATIONS:  Natural atomic orbital occupancies&quot; appears and take the last one</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">count2</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ending_found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># with open(self.log_file) as file:  # Use file to refer to the file object</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_file_text</span>
+        <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;NATURAL POPULATIONS:  Natural atomic orbital occupancies&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="c1"># if there is a frequency calculation in the log file, there are 2 or 3 occurences of this line</span>
+                <span class="c1"># but if not then we just take the first one (e.g. in SP calculations)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_calculation</span><span class="p">:</span>
+                    <span class="c1"># we only want the last occurence of this line, so either the 2nd or 3rd are saved</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="n">counting_line</span> <span class="o">=</span> <span class="n">line_index</span> <span class="o">+</span> <span class="mi">4</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                        <span class="n">counting_line</span> <span class="o">=</span> <span class="n">line_index</span> <span class="o">+</span> <span class="mi">4</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">counting_line</span> <span class="o">=</span> <span class="n">line_index</span> <span class="o">+</span> <span class="mi">4</span>
+
+            <span class="c1"># ToDo: the best approach would be to enumerate orbitals per atom, but how to do this? WIP</span>
+            <span class="c1"># the ending of the search should be at the amount of atoms * a space per atom * the amount of orbitals per atom</span>
+            <span class="c1"># amount_of_atoms = len(self.elements)</span>
+            <span class="c1"># use periodictable to sum the amount of orbitals for all atoms</span>
+            <span class="c1"># amount_of_orbitals = 0</span>
+            <span class="c1"># for element in self.elements:</span>
+                <span class="c1"># iterate over elements in periodic table and if it matches the element in the molecule, add the amount of orbitals to the total</span>
+                <span class="c1"># for pt_element in pt.elements:</span>
+                <span class="c1">#     if pt_element.symbol == element:</span>
+                <span class="c1">#         electron_config = pt.elements.electronconfig</span>
+                <span class="c1">#         amount_of_orbitals += electron_config.count(&#39;.&#39;)</span>
+            <span class="c1"># counting_line_ = counting_line + amount_of_atoms * 2 * amount_of_orbitals</span>
+                
+            <span class="c1"># # there are 3 possible endings of this section</span>
+            <span class="c1"># first we check if a line contains the string &quot;electrons found in the effective core potential&quot;</span>
+            <span class="c1"># ending_found = False</span>
+            <span class="k">if</span> <span class="s2">&quot;electrons found in the effective core potential&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_calculation</span><span class="p">:</span>
+                    <span class="n">count2</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">count2</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="n">counting_line_</span> <span class="o">=</span> <span class="n">line_index</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="n">ending_found</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">if</span> <span class="n">count2</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                        <span class="n">counting_line_</span> <span class="o">=</span> <span class="n">line_index</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="n">ending_found</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">counting_line_</span> <span class="o">=</span> <span class="n">line_index</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="n">ending_found</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">break</span>
+
+        <span class="c1"># if this is not the case, we check if a line contains the string &quot;WARNING:  1 low occupancy (&lt;1.9990e) core orbital  found on&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ending_found</span><span class="p">:</span>
+            <span class="n">count2</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                <span class="c1"># search for  WARNING:  {i} low occupancy (&lt;1.9990e) core orbital  found on line</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\sWARNING:\s+\d\s+low&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_calculation</span><span class="p">:</span>
+                        <span class="n">count2</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">count2</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                            <span class="n">counting_line_</span> <span class="o">=</span> <span class="n">line_index</span> <span class="o">-</span> <span class="mi">1</span>
+                            <span class="n">ending_found</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># the first occurence of this is the end of the section</span>
+                        <span class="n">counting_line_</span> <span class="o">=</span> <span class="n">line_index</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="n">ending_found</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+
+        <span class="c1"># elif &#39;Summary of Natural Population Analysis:&#39; in line:</span>
+        <span class="c1">#     counting_line_ = line_index - len(self.elements)</span>
+        <span class="c1"># if we have not found the ending yet, we check if the next line contains the string &quot;Summary of Natural Population Analysis:&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ending_found</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;Summary of Natural Population Analysis:&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">line_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+                        <span class="n">counting_line_</span> <span class="o">=</span> <span class="n">line_index</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Could not find the end of the natural population analysis section in the log file&quot;</span><span class="p">)</span>
+
+        <span class="n">occupancy_raw_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">counting_line</span><span class="p">:</span> <span class="n">counting_line_</span><span class="p">]</span>
+
+        <span class="n">occupancy_final_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">orbital_dictionary</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">occupancy</span> <span class="ow">in</span> <span class="n">occupancy_raw_data</span><span class="p">:</span>
+            <span class="n">occupancy</span> <span class="o">=</span> <span class="n">occupancy</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">occupancy</span> <span class="o">=</span> <span class="n">occupancy</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">occupancy</span> <span class="o">=</span> <span class="n">occupancy</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">occupancy</span> <span class="o">!=</span> <span class="p">[]:</span>
+                <span class="n">occupancy_final_data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">occupancy</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">orbital</span> <span class="ow">in</span> <span class="n">occupancy_final_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">orbital</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">orbital_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">orbital_dictionary</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">orbital</span><span class="p">[</span><span class="mi">2</span><span class="p">])]</span> <span class="o">=</span> <span class="p">{</span><span class="n">orbital</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">orbital</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="n">orbital</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="nb">float</span><span class="p">(</span><span class="n">orbital</span><span class="p">[</span><span class="mi">6</span><span class="p">])}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">orbital_dictionary</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">orbital</span><span class="p">[</span><span class="mi">2</span><span class="p">])][</span><span class="n">orbital</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">orbital</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="n">orbital</span><span class="p">[</span><span class="mi">5</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">orbital</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
+        <span class="c1"># divided by 2 since 2 electrons form the lone pair and the 3s orbital</span>
+
+        <span class="n">returns</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">atom_type_min</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span><span class="p">:</span>
+            <span class="c1"># for N the lone pair is in the 2S orbital</span>
+            <span class="n">returns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orbital_dictionary</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s1">&#39;S_Val(2S)&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">atom_type_min</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+            <span class="c1"># for O the lone pair is in the 2S orbital (or 2P, but we take the 2S)</span>
+            <span class="n">returns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orbital_dictionary</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s1">&#39;S_Val(2S)&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">returns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orbital_dictionary</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s1">&#39;S_Val(3S)&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">atom_type_max</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span><span class="p">:</span>
+            <span class="n">returns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orbital_dictionary</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s1">&#39;S_Val(2S)&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">atom_type_max</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+            <span class="n">returns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orbital_dictionary</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s1">&#39;S_Val(2S)&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">returns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orbital_dictionary</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s1">&#39;S_Val(3S)&#39;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">returns</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">returns</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.extract_thermodynamic_descriptors">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.extract_thermodynamic_descriptors">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_thermodynamic_descriptors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># extract energy, enthalpy, entropy, free energy in hartree</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sum_electronic_and_free_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">freeenergy</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Free energy not found in DFT log file&quot;</span><span class="p">)</span>
+            <span class="n">sum_electronic_and_free_energy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sum_electronic_and_enthalpy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">enthalpy</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Enthalpy not found in DFT log file&quot;</span><span class="p">)</span>
+            <span class="n">sum_electronic_and_enthalpy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zero_point_correction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zpve</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Zero point correction not found in DFT log file&quot;</span><span class="p">)</span>
+            <span class="n">zero_point_correction</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">entropy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">entropy</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Entropy not found in DFT log file&quot;</span><span class="p">)</span>
+            <span class="n">entropy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">sum_electronic_and_free_energy</span><span class="p">,</span> <span class="n">sum_electronic_and_enthalpy</span><span class="p">,</span> <span class="n">zero_point_correction</span><span class="p">,</span> <span class="n">entropy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_min_donor_metal_orbital_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_min_donor_metal_orbital_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_min_donor_metal_orbital_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">metal_min_donor_occupancy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_donor_metal_bonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">metal_min_donor_occupancy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_min_donor_metal_anti_orbital_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_min_donor_metal_anti_orbital_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_min_donor_metal_anti_orbital_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">metal_min_donor_anti_occupancy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_donor_metal_antibonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">metal_min_donor_anti_occupancy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_max_donor_metal_orbital_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_max_donor_metal_orbital_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_max_donor_metal_orbital_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">metal_max_donor_occupancy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_donor_metal_bonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_donor_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">metal_max_donor_occupancy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_max_donor_metal_anti_orbital_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_max_donor_metal_anti_orbital_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_max_donor_metal_anti_orbital_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">metal_max_donor_anti_occupancy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_donor_metal_antibonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_donor_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">metal_max_donor_anti_occupancy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_min_donor_other_orbital_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_min_donor_other_orbital_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_min_donor_other_orbital_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">other_element_index_list</span><span class="p">,</span> <span class="n">other_element_occupancy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_donor_other_element_bonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">other_element_index_list</span><span class="p">,</span> <span class="n">other_element_occupancy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_min_donor_other_anti_orbital_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_min_donor_other_anti_orbital_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_min_donor_other_anti_orbital_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">other_element_index_list</span><span class="p">,</span> <span class="n">other_element_occupancy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_donor_other_element_antibonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">other_element_index_list</span><span class="p">,</span> <span class="n">other_element_occupancy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_max_donor_other_orbital_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_max_donor_other_orbital_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_max_donor_other_orbital_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">other_element_index_list</span><span class="p">,</span> <span class="n">other_element_occupancy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_donor_other_element_bonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_donor_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">other_element_index_list</span><span class="p">,</span> <span class="n">other_element_occupancy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_max_donor_other_anti_orbital_occupation">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_max_donor_other_anti_orbital_occupation">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_max_donor_other_anti_orbital_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">other_element_index_list</span><span class="p">,</span> <span class="n">other_element_occupancy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_donor_other_element_antibonding_occupation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_donor_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">other_element_index_list</span><span class="p">,</span> <span class="n">other_element_occupancy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_donor_lone_pair_occupancy">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_donor_lone_pair_occupancy">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_donor_lone_pair_occupancy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">min_donor_occupancy</span><span class="p">,</span> <span class="n">max_donor_occupancy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_donor_lone_pair_occupancy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_donor_element</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lone pair occupancy not found in DFT log file&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">min_donor_occupancy</span><span class="p">,</span> <span class="n">max_donor_occupancy</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">min_donor_occupancy</span><span class="p">,</span> <span class="n">max_donor_occupancy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_dipole_moment">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_dipole_moment">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_dipole_moment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dipole_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_dipole_moment</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">dipole</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dipole_vector</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dipole_vector</span><span class="p">))</span>  <span class="c1"># unit: Debye dipole moment</span>
+        <span class="k">return</span> <span class="n">dipole</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_dispersion_energy">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_dispersion_energy">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_dispersion_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dispersion_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_dispersion_energies</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># unit: eV</span>
+        <span class="k">return</span> <span class="n">dispersion_energy</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_natural_charges">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_natural_charges">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_natural_charges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">natural_charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_natural_charges</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">metal_center_charge</span> <span class="o">=</span> <span class="n">natural_charges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metal_center_charge</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">max_donor_charge</span> <span class="o">=</span> <span class="n">natural_charges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span><span class="p">]</span>
+        <span class="n">min_donor_charge</span> <span class="o">=</span> <span class="n">natural_charges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">metal_center_charge</span><span class="p">,</span> <span class="n">min_donor_charge</span><span class="p">,</span> <span class="n">max_donor_charge</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_mulliken_charges">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_mulliken_charges">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_mulliken_charges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mulliken_charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_mulliken_charges</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">metal_center_charge</span> <span class="o">=</span> <span class="n">mulliken_charges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metal_center_charge</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">max_donor_charge</span> <span class="o">=</span> <span class="n">mulliken_charges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_donor_idx</span><span class="p">]</span>
+        <span class="n">min_donor_charge</span> <span class="o">=</span> <span class="n">mulliken_charges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_donor_idx</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">metal_center_charge</span><span class="p">,</span> <span class="n">min_donor_charge</span><span class="p">,</span> <span class="n">max_donor_charge</span></div>
+
+
+<div class="viewcode-block" id="DFTExtractor.calculate_electronic_descriptors">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.DFTExtractor.calculate_electronic_descriptors">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_electronic_descriptors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">homo_energy</span><span class="p">,</span> <span class="n">lumo_energy</span><span class="p">,</span> <span class="n">homo_lumo_gap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_homo_lumo_gap</span><span class="p">()</span>
+        <span class="n">hardness</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">lumo_energy</span> <span class="o">-</span> <span class="n">homo_energy</span><span class="p">)</span>
+        <span class="n">softness</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">hardness</span>
+        <span class="n">electronegativity</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">lumo_energy</span> <span class="o">+</span> <span class="n">homo_energy</span><span class="p">))</span>
+        <span class="n">electrophilicity</span> <span class="o">=</span> <span class="p">(</span><span class="n">electronegativity</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hardness</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">homo_energy</span><span class="p">,</span> <span class="n">lumo_energy</span><span class="p">,</span> <span class="n">homo_lumo_gap</span><span class="p">,</span> <span class="n">hardness</span><span class="p">,</span> <span class="n">softness</span><span class="p">,</span> <span class="n">electronegativity</span><span class="p">,</span> <span class="n">electrophilicity</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">molecular_graph</span> <span class="kn">import</span> <span class="n">molecular_graph</span>
+
+<div class="viewcode-block" id="complexes_to_calc_descriptors">
+<a class="viewcode-back" href="../../autoapi/obelix/dft_extraction/index.html#obelix.dft_extraction.complexes_to_calc_descriptors">[docs]</a>
+    <span class="n">complexes_to_calc_descriptors</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;Workflow&#39;</span><span class="p">,</span> <span class="s1">&#39;*.log&#39;</span><span class="p">))</span></div>
+
+    <span class="k">for</span> <span class="nb">complex</span> <span class="ow">in</span> <span class="n">complexes_to_calc_descriptors</span><span class="p">:</span>
+        <span class="c1"># dft = DFTExtractor(complex, 39, 5, 28)</span>
+        <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="n">read_cclib</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># if this is true, there is only 1 coordinates array</span>
+            <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># coordinates = np.array(coordinates).reshape(-1, len(coordinates), 3)</span>
+        <span class="c1"># coordinates = coordinates[0]</span>
+        <span class="c1"># # coordinates = np.array([np.array(coord) for coord in coordinates])</span>
+        <span class="c1"># # print(coordinates)</span>
+        <span class="c1"># elements = convert_elements(elements, output=&#39;symbols&#39;)</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
+        <span class="n">geom_type</span> <span class="o">=</span> <span class="s1">&#39;BD&#39;</span>
+        <span class="n">ligand_atoms</span><span class="p">,</span> <span class="n">bidentate</span> <span class="o">=</span> <span class="n">molecular_graph</span><span class="p">(</span><span class="n">elements</span><span class="o">=</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="o">=</span><span class="n">coordinates</span><span class="p">)</span>
+        <span class="n">dft</span> <span class="o">=</span> <span class="n">DFTExtractor</span><span class="p">(</span><span class="nb">complex</span><span class="p">,</span> <span class="n">bidentate</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bidentate</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bidentate</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="s1">&#39;nbd&#39;</span><span class="p">)</span>
+        <span class="c1"># print(dft.check_nbd_back_carbon())</span>
+        <span class="c1"># print(dft.get_hydrogens_bonded_to_carbon_back_nbd())</span>
+        <span class="n">nbd_complex</span> <span class="o">=</span> <span class="n">NBDComplex</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="nb">complex</span><span class="p">)</span>
+        <span class="c1"># print(nbd_complex.find_central_carbon_nbd_rdkit())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">nbd_complex</span><span class="o">.</span><span class="n">find_central_carbon_and_hydrogens_nbd_openbabel</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">nbd_complex</span><span class="o">.</span><span class="n">find_nbd_indices_openbabel</span><span class="p">())</span>
+        <span class="c1"># print(dft.extract_thermodynamic_descriptors())</span>
+        <span class="c1"># print(dft.calculate_min_donor_metal_orbital_occupation(), dft.calculate_min_donor_metal_anti_orbital_occupation())</span>
+        <span class="c1"># print(dft.calculate_max_donor_metal_orbital_occupation(), dft.calculate_max_donor_metal_anti_orbital_occupation())</span>
+        <span class="c1"># print(dft.calculate_min_donor_other_orbital_occupation())</span>
+        <span class="c1"># print(dft.calculate_max_donor_other_orbital_occupation())</span>
+        <span class="c1"># print(dft.calculate_min_donor_other_anti_orbital_occupation())</span>
+        <span class="c1"># print(dft.calculate_max_donor_other_anti_orbital_occupation())</span>
+        <span class="c1"># print(dft.calculate_dipole_moment())</span>
+        <span class="c1"># print(dft.calculate_donor_lone_pair_occupancy())</span>
+        <span class="c1"># print(dft.calculate_dispersion_energy())</span>
+        <span class="c1"># print(dft.calculate_natural_charges())</span>
+        <span class="c1"># print(dft.calculate_mulliken_charges())</span>
+        <span class="c1"># print(dft.calculate_electronic_descriptors())</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,237 @@
+obelix.dft_extraction
+=====================
+
+.. py:module:: obelix.dft_extraction
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   obelix.dft_extraction.complexes_to_calc_descriptors
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   obelix.dft_extraction.NBDComplex
+   obelix.dft_extraction.DFTExtractor
+
+
+Module Contents
+---------------
+
+.. py:class:: NBDComplex(elements, coordinates, filename)
+
+   Bases: :py:obj:`object`
+
+
+   Class for representing a M-NBD complex.
+
+
+   .. py:attribute:: elements
+
+
+   .. py:attribute:: coordinates
+
+
+   .. py:attribute:: filename
+
+
+   .. py:attribute:: carbon_back_nbd_idx
+
+
+   .. py:attribute:: xyz_string
+      :value: ''
+
+
+
+   .. py:method:: find_nbd_indices_openbabel()
+
+      NBD is normally at the bottom of the xyz/log file and has 15 atoms. But if this is not the case we
+      want to find the indices of the NBD atoms. This substructure search is done using Open Babel.
+      openbabel or RDKit representaiton of the M-NBD complex unfortunately does not work, so molsimplify can be used
+      in the future. This is WIP.
+
+      :return:
+
+
+
+   .. py:method:: find_central_carbon_and_hydrogens_nbd_openbabel()
+
+      NBD is normally at the bottom of the xyz/log file and has 15 atoms. But if this is not the case we
+      want to find the indices of the NBD atoms. This substructure search is done using Open Babel. In this
+      substructre we can then find the central carbon and the two hydrogens bonded to it.
+      openbabel or RDKit representaiton of the M-NBD complex unfortunately does not work, so molsimplify can be used
+      in the future. This is WIP.
+
+      :return:
+
+
+
+   .. py:method:: check_nbd_back_carbon()
+
+      Check if the carbon atom at the back of the NBD is bonded to two hydrogens. If so, return the index of the carbon
+
+      :return:
+
+
+
+   .. py:method:: get_hydrogens_bonded_to_carbon_back_nbd()
+
+      Get the indices of the two hydrogens bonded to the carbon in the back of the NBD molecule.
+
+      :return:
+
+
+
+.. py:class:: DFTExtractor(log_file, metal_center_idx, min_donor_idx, max_donor_idx, metal_adduct='pristine')
+
+   Bases: :py:obj:`object`
+
+
+   Extracts data from a Gaussian log file using cclib. This class is used to extract the data from the log file and
+   return the values. These are then correctly formatted and parsed in descriptor_calculator.py
+
+
+   .. py:attribute:: log_file
+
+
+   .. py:attribute:: supported_metal_adducts
+      :value: ['pristine', 'acetonitrile', 'nbd']
+
+
+
+   .. py:attribute:: metal_adduct
+
+
+   .. py:attribute:: parser
+
+
+   .. py:attribute:: data
+
+
+   .. py:attribute:: meta_data
+
+
+   .. py:attribute:: freq_calculation
+      :value: False
+
+
+
+   .. py:attribute:: atom_charges_dict
+
+
+   .. py:attribute:: elements
+
+
+   .. py:attribute:: metal_center_idx
+      :value: None
+
+
+
+   .. py:attribute:: min_donor_idx
+      :value: None
+
+
+
+   .. py:attribute:: max_donor_idx
+      :value: None
+
+
+
+   .. py:method:: check_normal_termination()
+
+
+   .. py:method:: check_nbd_back_carbon()
+
+
+   .. py:method:: get_hydrogens_bonded_to_carbon_back_nbd()
+
+
+   .. py:method:: extract_time()
+
+
+   .. py:method:: extract_homo_lumo_gap()
+
+
+   .. py:method:: extract_natural_charges_cclib()
+
+
+   .. py:method:: extract_natural_charges()
+
+
+   .. py:method:: extract_mulliken_charges()
+
+
+   .. py:method:: extract_dipole_moment()
+
+
+   .. py:method:: extract_dispersion_energies()
+
+
+   .. py:method:: extract_donor_metal_antibonding_occupation(donor_element, donor_idx, metal_center_element, metal_center_idx)
+
+
+   .. py:method:: extract_donor_metal_bonding_occupation(donor_element, donor_idx, metal_center_element, metal_center_idx)
+
+
+   .. py:method:: extract_donor_other_element_antibonding_occupation(donor_element, donor_idx)
+
+
+   .. py:method:: extract_donor_other_element_bonding_occupation(donor_element, donor_idx)
+
+
+   .. py:method:: extract_donor_lone_pair_occupancy(atom_type_min, atom_type_max)
+
+
+   .. py:method:: extract_thermodynamic_descriptors()
+
+
+   .. py:method:: calculate_min_donor_metal_orbital_occupation()
+
+
+   .. py:method:: calculate_min_donor_metal_anti_orbital_occupation()
+
+
+   .. py:method:: calculate_max_donor_metal_orbital_occupation()
+
+
+   .. py:method:: calculate_max_donor_metal_anti_orbital_occupation()
+
+
+   .. py:method:: calculate_min_donor_other_orbital_occupation()
+
+
+   .. py:method:: calculate_min_donor_other_anti_orbital_occupation()
+
+
+   .. py:method:: calculate_max_donor_other_orbital_occupation()
+
+
+   .. py:method:: calculate_max_donor_other_anti_orbital_occupation()
+
+
+   .. py:method:: calculate_donor_lone_pair_occupancy()
+
+
+   .. py:method:: calculate_dipole_moment()
+
+
+   .. py:method:: calculate_dispersion_energy()
+
+
+   .. py:method:: calculate_natural_charges()
+
+
+   .. py:method:: calculate_mulliken_charges()
+
+
+   .. py:method:: calculate_electronic_descriptors()
+
+
+.. py:data:: complexes_to_calc_descriptors
+

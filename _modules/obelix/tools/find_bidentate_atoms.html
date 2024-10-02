@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>obelix.tools.find_bidentate_atoms &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            obelix
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">obelix.tools.find_bidentate_atoms</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for obelix.tools.find_bidentate_atoms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># openbabe-based method, example reading from a log file</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">openbabel</span> <span class="kn">import</span> <span class="n">openbabel</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">morfeus.io</span> <span class="kn">import</span> <span class="n">read_cclib</span><span class="p">,</span> <span class="n">get_xyz_string</span>
+<span class="kn">from</span> <span class="nn">morfeus.utils</span> <span class="kn">import</span> <span class="n">convert_elements</span>
+
+
+<div class="viewcode-block" id="get_bonded_atoms">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.get_bonded_atoms">[docs]</a>
+<span class="k">def</span> <span class="nf">get_bonded_atoms</span><span class="p">(</span><span class="n">xyz_string</span><span class="p">,</span> <span class="n">atom_index</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use openbabel&#39;s methods to find the coordinates of all atoms that are bonded to a given atom</span>
+<span class="sd">    :param source_mol_file:</span>
+<span class="sd">    :param atom_index:</span>
+<span class="sd">    :return: numpy array of atoms bonded to a given atom</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># initalize openbabel classes</span>
+    <span class="n">obconversion</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBConversion</span><span class="p">()</span>
+    <span class="n">obconversion</span><span class="o">.</span><span class="n">SetInFormat</span><span class="p">(</span><span class="s2">&quot;xyz&quot;</span><span class="p">)</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBMol</span><span class="p">()</span>
+    <span class="n">obconversion</span><span class="o">.</span><span class="n">ReadString</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">xyz_string</span><span class="p">)</span>
+
+    <span class="c1"># make atom object for atom we want</span>
+    <span class="n">atom</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">GetAtom</span><span class="p">(</span><span class="n">atom_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># for obmol get functions indexing starts from 1</span>
+
+    <span class="n">index_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">neighbour_atom</span> <span class="ow">in</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBAtomAtomIter</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+        <span class="n">atomic_num</span> <span class="o">=</span> <span class="n">neighbour_atom</span><span class="o">.</span><span class="n">GetAtomicNum</span><span class="p">()</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">neighbour_atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()</span>
+        <span class="n">index_list</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">atomic_num</span><span class="p">,</span> <span class="n">index</span><span class="p">])</span>
+
+    <span class="c1"># ToDo: convert obmol to rdkit and use methods there to determine correct bidentate cycle?</span>
+    <span class="c1"># rdkit_mol = openbabel.OBMolToMol(mol)</span>
+    <span class="c1"># or</span>
+    <span class="c1"># rdkit_mol = Chem.MolFromMolBlock(conversion.WriteString(mol))</span>
+    <span class="k">return</span> <span class="n">index_list</span></div>
+
+
+
+<div class="viewcode-block" id="complexes_to_calc_descriptors">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.complexes_to_calc_descriptors">[docs]</a>
+<span class="n">complexes_to_calc_descriptors</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;*.log&#39;</span><span class="p">))</span></div>
+
+<span class="k">for</span> <span class="nb">complex</span> <span class="ow">in</span> <span class="n">complexes_to_calc_descriptors</span><span class="p">:</span>
+    <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="n">read_cclib</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
+<div class="viewcode-block" id="elements">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.elements">[docs]</a>
+    <span class="n">elements</span> <span class="o">=</span> <span class="n">convert_elements</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;symbols&#39;</span><span class="p">)</span></div>
+
+    <span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">elements</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">xyz_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">coordinates</span><span class="p">:</span>
+        <span class="n">xyz_string</span> <span class="o">=</span> <span class="n">get_xyz_string</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coord</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">get_bonded_atoms</span><span class="p">(</span><span class="n">xyz_string</span><span class="p">,</span> <span class="mi">38</span><span class="p">))</span>
+
+<span class="c1"># RDkit and mace-dependent method</span>
+<span class="kn">import</span> <span class="nn">mace</span>
+<span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+<span class="sd">&#39;&#39;&#39;Find bidentate indices in metal-ligand complex based on smallest set of rings containing at least two mapped atoms&#39;&#39;&#39;</span>
+
+
+<div class="viewcode-block" id="check_if_at_least_two_mapped_atoms_in_ring">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.check_if_at_least_two_mapped_atoms_in_ring">[docs]</a>
+<span class="k">def</span> <span class="nf">check_if_at_least_two_mapped_atoms_in_ring</span><span class="p">(</span><span class="n">list_of_mapped_idxs</span><span class="p">,</span> <span class="n">list_of_ring_idxs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">list_of_mapped_idxs</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">list_of_ring_idxs</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="mi">2</span></div>
+
+    <span class="c1"># return sum(x in list_of_mapped_idxs for x in list_of_ring_idxs) &gt;= 2</span>
+
+
+<div class="viewcode-block" id="test_ligand">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.test_ligand">[docs]</a>
+<span class="n">test_ligand</span> <span class="o">=</span> <span class="s1">&#39;CC(C)[C@H]1CC[C@@H]([P:1]1C2=CC=CC=C2[N:1]3[C@H](CC[C@@H]3C(C)C)C(C)C)C(C)C&#39;</span></div>
+
+<div class="viewcode-block" id="substrate">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.substrate">[docs]</a>
+<span class="n">substrate</span> <span class="o">=</span> <span class="s1">&#39;CC#[N:1]&#39;</span></div>
+
+<div class="viewcode-block" id="ligands">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.ligands">[docs]</a>
+<span class="n">ligands</span> <span class="o">=</span> <span class="p">[</span><span class="n">substrate</span><span class="p">,</span> <span class="n">test_ligand</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="CA">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.CA">[docs]</a>
+<span class="n">CA</span> <span class="o">=</span> <span class="s1">&#39;[Ir+3]&#39;</span> <span class="c1"># SMILES of central atom</span></div>
+
+<div class="viewcode-block" id="geom">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.geom">[docs]</a>
+<span class="n">geom</span> <span class="o">=</span> <span class="s1">&#39;SP&#39;</span></div>
+
+
+<div class="viewcode-block" id="X">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.X">[docs]</a>
+<span class="n">X</span> <span class="o">=</span> <span class="n">mace</span><span class="o">.</span><span class="n">ComplexFromLigands</span><span class="p">(</span><span class="n">ligands</span><span class="p">,</span> <span class="n">CA</span><span class="p">,</span> <span class="n">geom</span><span class="p">)</span></div>
+
+<span class="n">donor_atoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">mol3D</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">()</span> <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetAtomMapNum</span><span class="p">()]</span>
+
+<div class="viewcode-block" id="Xs">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.Xs">[docs]</a>
+<span class="n">Xs</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">GetStereomers</span><span class="p">(</span><span class="n">regime</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">dropEnantiomers</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="first_conformer">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.first_conformer">[docs]</a>
+<span class="n">first_conformer</span> <span class="o">=</span> <span class="n">Xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<span class="c1"># all cycles that could possibly be the metal-bidentate cycle</span>
+<div class="viewcode-block" id="bidentate_cycle_idxs">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.bidentate_cycle_idxs">[docs]</a>
+<span class="n">bidentate_cycle_idxs</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<span class="c1"># the final bidentate cycle indices</span>
+<div class="viewcode-block" id="bidentate_idxs">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.bidentate_idxs">[docs]</a>
+<span class="n">bidentate_idxs</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">X</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">Xs</span><span class="p">):</span>
+    <span class="n">X</span><span class="o">.</span><span class="n">AddConformers</span><span class="p">(</span><span class="n">numConfs</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+
+    <span class="c1"># get all mapped (donor) atom indices</span>
+<div class="viewcode-block" id="donor_atoms">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/find_bidentate_atoms/index.html#obelix.tools.find_bidentate_atoms.donor_atoms">[docs]</a>
+    <span class="n">donor_atoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">mol3D</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">()</span> <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetAtomMapNum</span><span class="p">()]</span></div>
+
+    <span class="c1"># smallest set of simple rings containing at least two mapped atoms</span>
+    <span class="n">atoms_of_smallest_rings</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">Chem</span><span class="o">.</span><span class="n">GetSymmSSSR</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">mol3D</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">list_idxs</span> <span class="ow">in</span> <span class="n">atoms_of_smallest_rings</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">check_if_at_least_two_mapped_atoms_in_ring</span><span class="p">(</span><span class="n">donor_atoms</span><span class="p">,</span> <span class="n">list_idxs</span><span class="p">):</span>
+            <span class="c1"># these are the same for each conformer, so I just reassign the variable each time</span>
+            <span class="c1"># technically it would be enough to do this once for the first conformer, but I&#39;m not sure if it&#39;s possible</span>
+            <span class="c1"># ToDo, maybe only do all of this if i == 0? but check if it&#39;s possible to have different bidentate cycles for different conformers</span>
+            <span class="n">bidentate_cycle_idxs</span> <span class="o">=</span> <span class="n">list_idxs</span>
+            <span class="k">break</span>
+
+    <span class="c1"># find metal atom and neighbours</span>
+    <span class="n">atomic_number_metal_center</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">CA</span><span class="p">)</span><span class="o">.</span><span class="n">GetAtomWithIdx</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetAtomicNum</span><span class="p">()</span>
+    <span class="n">metal_atom</span> <span class="o">=</span> <span class="p">[</span><span class="n">atom</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">mol3D</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">()</span> <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetAtomicNum</span><span class="p">()</span> <span class="o">==</span> <span class="n">atomic_number_metal_center</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">metal_bonds</span> <span class="o">=</span> <span class="p">[</span><span class="n">bond</span> <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">metal_atom</span><span class="o">.</span><span class="n">GetBonds</span><span class="p">()]</span>
+    <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">metal_bonds</span><span class="p">:</span>
+        <span class="n">idx1</span><span class="p">,</span> <span class="n">idx2</span> <span class="o">=</span> <span class="n">bond</span><span class="o">.</span><span class="n">GetBeginAtomIdx</span><span class="p">(),</span> <span class="n">bond</span><span class="o">.</span><span class="n">GetEndAtomIdx</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">idx1</span> <span class="o">==</span> <span class="n">metal_atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()</span> <span class="ow">and</span> <span class="n">idx2</span> <span class="ow">in</span> <span class="n">bidentate_cycle_idxs</span><span class="p">):</span>
+            <span class="n">bidentate_idxs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">idx1</span> <span class="ow">in</span> <span class="n">bidentate_cycle_idxs</span> <span class="ow">and</span> <span class="n">idx2</span> <span class="o">==</span> <span class="n">metal_atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()):</span>
+            <span class="n">bidentate_idxs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx1</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">bidentate_idxs</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

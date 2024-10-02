@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>obelix.tools.utilities &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            obelix
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">obelix.tools.utilities</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for obelix.tools.utilities</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">random</span><span class="o">,</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">openbabel</span> <span class="kn">import</span> <span class="n">openbabel</span>
+
+
+<div class="viewcode-block" id="get_bonded_atoms">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.get_bonded_atoms">[docs]</a>
+<span class="k">def</span> <span class="nf">get_bonded_atoms</span><span class="p">(</span><span class="n">xyz_string</span><span class="p">,</span> <span class="n">atom_index</span><span class="p">,</span> <span class="n">search_this_atomic_num</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use openbabel&#39;s methods to find the coordinates of all atoms that are bonded to a given atom</span>
+<span class="sd">    :param XYZ file in string format:</span>
+<span class="sd">    :param atom_index:</span>
+<span class="sd">    :return: numpy array of atoms bonded to a given atom</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># initalize openbabel classes</span>
+    <span class="n">obconversion</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBConversion</span><span class="p">()</span>
+    <span class="n">obconversion</span><span class="o">.</span><span class="n">SetInFormat</span><span class="p">(</span><span class="s2">&quot;xyz&quot;</span><span class="p">)</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBMol</span><span class="p">()</span>
+    <span class="n">obconversion</span><span class="o">.</span><span class="n">ReadString</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">xyz_string</span><span class="p">)</span>
+
+    <span class="c1"># make atom object for atom we want</span>
+    <span class="n">atom</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">GetAtom</span><span class="p">(</span><span class="n">atom_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># for obmol get functions indexing starts from 1</span>
+
+    <span class="n">index_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">neighbour_atom</span> <span class="ow">in</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBAtomAtomIter</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">search_this_atomic_num</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">neighbour_atom</span><span class="o">.</span><span class="n">GetAtomicNum</span><span class="p">()</span> <span class="o">!=</span> <span class="n">search_this_atomic_num</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="n">atomic_num</span> <span class="o">=</span> <span class="n">neighbour_atom</span><span class="o">.</span><span class="n">GetAtomicNum</span><span class="p">()</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">neighbour_atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()</span>
+        <span class="n">index_list</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">atomic_num</span><span class="p">,</span> <span class="n">index</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">index_list</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_dihedral">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.calculate_dihedral">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_dihedral</span><span class="p">(</span><span class="n">coordinates_1</span><span class="p">,</span> <span class="n">coordinates_2</span><span class="p">,</span> <span class="n">coordinates_3</span><span class="p">,</span> <span class="n">coordinates_4</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Praxeolitic formula</span>
+<span class="sd">    1 sqrt, 1 cross product source: https://stackoverflow.com/a/34245697&quot;&quot;&quot;</span>
+
+    <span class="n">p0</span> <span class="o">=</span> <span class="n">coordinates_1</span>
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">coordinates_2</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">coordinates_3</span>
+    <span class="n">p3</span> <span class="o">=</span> <span class="n">coordinates_4</span>
+
+    <span class="n">b0</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">p1</span> <span class="o">-</span> <span class="n">p0</span><span class="p">)</span>
+    <span class="n">b1</span> <span class="o">=</span> <span class="n">p2</span> <span class="o">-</span> <span class="n">p1</span>
+    <span class="n">b2</span> <span class="o">=</span> <span class="n">p3</span> <span class="o">-</span> <span class="n">p2</span>
+
+    <span class="c1"># normalize b1 so that it does not influence magnitude of vector</span>
+    <span class="c1"># rejections that come next</span>
+    <span class="n">b1</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b1</span><span class="p">)</span>
+
+    <span class="c1"># vector rejections</span>
+    <span class="c1"># v = projection of b0 onto plane perpendicular to b1</span>
+    <span class="c1">#   = b0 minus component that aligns with b1</span>
+    <span class="c1"># w = projection of b2 onto plane perpendicular to b1</span>
+    <span class="c1">#   = b2 minus component that aligns with b1</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">b0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">)</span> <span class="o">*</span> <span class="n">b1</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">b2</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b1</span><span class="p">)</span> <span class="o">*</span> <span class="n">b1</span>
+
+    <span class="c1"># angle between v and w in a plane is the torsion angle</span>
+    <span class="c1"># v and w may not be normalized but that&#39;s fine since tan is y/x</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span> <span class="n">w</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="calculate_distance">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.calculate_distance">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_distance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function calculates the distance between two points in 3D space.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        a : array of floats</span>
+<span class="sd">        b : array of floats</span>
+<span class="sd">    Return:</span>
+<span class="sd">        distance : float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">distance</span></div>
+
+
+<div class="viewcode-block" id="add_code_to_structure">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.add_code_to_structure">[docs]</a>
+<span class="k">def</span> <span class="nf">add_code_to_structure</span><span class="p">():</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">code_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">code_name</span></div>
+
+    
+
+<div class="viewcode-block" id="change_second_line_xyz">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.change_second_line_xyz">[docs]</a>
+<span class="k">def</span> <span class="nf">change_second_line_xyz</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">new_content</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xyz</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="c1"># read a list of lines into data</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="c1"># now change the 2nd line, note that you have to add a newline</span>
+    
+    <span class="k">if</span> <span class="n">new_content</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">new_content</span><span class="p">)</span>
+        
+    <span class="c1"># and write everything back</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xyz</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_ligands_from_smiles">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.get_ligands_from_smiles">[docs]</a>
+<span class="k">def</span> <span class="nf">get_ligands_from_smiles</span><span class="p">(</span><span class="n">ligands_SMILES</span><span class="p">):</span>
+    <span class="n">ligand_mol</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">ligands_SMILES</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">ligand</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ligands_SMILES</span><span class="p">):</span>
+        <span class="n">ligands_SMILES</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">ligand</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">ligand_mol</span></div>
+
+
+
+<div class="viewcode-block" id="dataframe_from_dictionary">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.dataframe_from_dictionary">[docs]</a>
+<span class="k">def</span> <span class="nf">dataframe_from_dictionary</span><span class="p">(</span><span class="n">dictionary</span><span class="p">):</span>
+    <span class="n">Dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span><span class="n">i</span><span class="p">:</span> <span class="n">dictionary</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                           <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Dataframe</span></div>
+
+
+
+<div class="viewcode-block" id="get_cluster_centroid_coord">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.get_cluster_centroid_coord">[docs]</a>
+<span class="k">def</span> <span class="nf">get_cluster_centroid_coord</span><span class="p">(</span><span class="n">n_clusters</span><span class="p">,</span> <span class="n">unique_labels</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function identifies the centroids of the clusters generated by the UMAP </span>
+<span class="sd">    algorithm. </span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        n_clusters    : integer</span>
+<span class="sd">        unique_labels : array of integers </span>
+<span class="sd">        dataframe     : pandas dataframe containing UMAP1, UMAP2</span>
+<span class="sd">    Return:</span>
+<span class="sd">        centroids     : array of float sized (2, n_clusters), </span>
+<span class="sd">                          where 2 is (x, y) coordinates</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initialize cluster centroids array</span>
+    <span class="n">centroids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_clusters</span><span class="p">))</span>
+    
+    <span class="c1"># fill the array with the coords</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">u_label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_labels</span><span class="p">):</span>
+        <span class="n">UMAP1</span> <span class="o">=</span> <span class="n">dataframe</span><span class="p">[(</span><span class="n">dataframe</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">u_label</span><span class="p">)]</span><span class="o">.</span><span class="n">mean</span><span class="p">()[</span><span class="s1">&#39;UMAP-1&#39;</span><span class="p">]</span>
+        <span class="n">UMAP2</span> <span class="o">=</span>  <span class="n">dataframe</span><span class="p">[(</span><span class="n">dataframe</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">u_label</span><span class="p">)]</span><span class="o">.</span><span class="n">mean</span><span class="p">()[</span><span class="s1">&#39;UMAP-2&#39;</span><span class="p">]</span>    
+        <span class="n">temp_coord_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">UMAP1</span><span class="p">,</span> <span class="n">UMAP2</span><span class="p">])</span>
+        <span class="n">centroids</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_coord_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">centroids</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_coord_array</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        
+    <span class="k">return</span> <span class="n">centroids</span></div>
+
+
+
+<div class="viewcode-block" id="find_bonds_with_neighbours">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.find_bonds_with_neighbours">[docs]</a>
+<span class="k">def</span> <span class="nf">find_bonds_with_neighbours</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">center_atom_atomic_number</span><span class="p">):</span>
+    <span class="n">center_atom</span> <span class="o">=</span> <span class="p">[</span><span class="n">atom</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">()</span> <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetAtomicNum</span><span class="p">()</span> <span class="o">==</span> <span class="n">center_atom_atomic_number</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">bonds</span> <span class="o">=</span> <span class="p">[</span><span class="n">bond</span> <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">center_atom</span><span class="o">.</span><span class="n">GetBonds</span><span class="p">()]</span>
+    <span class="k">return</span> <span class="n">bonds</span></div>
+
+
+
+<div class="viewcode-block" id="check_if_at_least_two_mapped_atoms_in_ring">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.check_if_at_least_two_mapped_atoms_in_ring">[docs]</a>
+<span class="k">def</span> <span class="nf">check_if_at_least_two_mapped_atoms_in_ring</span><span class="p">(</span><span class="n">list_of_mapped_idxs</span><span class="p">,</span> <span class="n">list_of_ring_idxs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">list_of_mapped_idxs</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">list_of_ring_idxs</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="mi">2</span></div>
+
+
+
+<div class="viewcode-block" id="find_bidentate">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.find_bidentate">[docs]</a>
+<span class="k">def</span> <span class="nf">find_bidentate</span><span class="p">(</span><span class="n">xyz</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">listfile</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">listfile</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">atom</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">listfile</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">atom</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;P&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">indices</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">atom</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Ir&#39;</span><span class="p">:</span>
+                <span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">atoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+                
+    <span class="k">return</span> <span class="n">indices</span></div>
+
+
+
+<div class="viewcode-block" id="xyz_to_gjf">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.xyz_to_gjf">[docs]</a>
+<span class="k">def</span> <span class="nf">xyz_to_gjf</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">io_path</span><span class="p">):</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">io_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">io_path</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">io_path</span><span class="p">)</span>
+
+    <span class="n">xyzs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.xyz&#39;</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">xyz</span> <span class="ow">in</span> <span class="n">xyzs</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">new_line</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">new_line</span><span class="p">)</span>        
+            
+            <span class="n">f</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">))</span>
+            
+            <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+  
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">xyz</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="si">}</span><span class="s1">.gjf&#39;</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            
+                <span class="n">file</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="gjf_to_xyz">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.gjf_to_xyz">[docs]</a>
+<span class="k">def</span> <span class="nf">gjf_to_xyz</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">header</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">gjf</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;*.gjf&quot;</span><span class="p">)):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">gjf</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+            
+            <span class="c1"># count = len(f) - len(header)</span>
+            <span class="c1"># print(count, gjf)</span>
+            
+            <span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">):]</span>
+            <span class="c1"># print(f)</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">count</span><span class="p">))</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">gjf</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="si">}</span><span class="s1">.xyz&#39;</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  </div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="header">
+<a class="viewcode-back" href="../../../autoapi/obelix/tools/utilities/index.html#obelix.tools.utilities.header">[docs]</a>
+    <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;%nprocshared=32 </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>  
+            <span class="s1">&#39;%mem=32GB </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;#p opt freq pop=nbo def2svpp empiricaldispersion=gd3bj integral=grid=ultrafinegrid pbe1pbe</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;scf=(xqc,maxconventionalcycles=90) nosymm</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>      
+            <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;Title Card Required</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;1 1 </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">]</span></div>
+
+
+
+    <span class="c1"># xyz_to_gjf(header=header, </span>
+    <span class="c1">#            io_path=&#39;data/Rh_dataset/ferrocenes/other&#39;)</span>
+
+
+    <span class="c1"># gjf_to_xyz(path=&#39;data/Rh_dataset/ferrocenes/gaussian_input_files/gjf&#39;, header=header)</span>
+    <span class="n">xyz_to_gjf</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">io_path</span><span class="o">=</span><span class="s1">&#39;../&#39;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

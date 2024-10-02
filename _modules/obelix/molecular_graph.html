@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>obelix.molecular_graph &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            obelix
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">obelix.molecular_graph</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for obelix.molecular_graph</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">periodictable</span>
+<span class="kn">from</span> <span class="nn">morfeus</span> <span class="kn">import</span> <span class="n">read_xyz</span> <span class="k">as</span> <span class="n">read_xyz_mf</span>
+<span class="kn">from</span> <span class="nn">morfeus.utils</span> <span class="kn">import</span> <span class="n">convert_elements</span>
+<span class="kn">from</span> <span class="nn">morfeus.io</span> <span class="kn">import</span> <span class="n">read_cclib</span><span class="p">,</span> <span class="n">write_xyz</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+
+
+<span class="c1">### Temporary two solutions for storing the atomic radii.</span>
+
+<span class="n">atomic_radii</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">periodictable</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
+    <span class="n">atomic_radii</span><span class="p">[</span><span class="n">element</span><span class="o">.</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">covalent_radius</span>
+
+<div class="viewcode-block" id="atomic_radii">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.atomic_radii">[docs]</a>
+<span class="n">atomic_radii</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">Ac</span><span class="o">=</span><span class="mf">1.88</span><span class="p">,</span>
+    <span class="n">Ag</span><span class="o">=</span><span class="mf">1.59</span><span class="p">,</span>
+    <span class="n">Al</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span>
+    <span class="n">Am</span><span class="o">=</span><span class="mf">1.51</span><span class="p">,</span>
+    <span class="n">As</span><span class="o">=</span><span class="mf">1.21</span><span class="p">,</span>
+    <span class="n">Au</span><span class="o">=</span><span class="mf">1.50</span><span class="p">,</span>
+    <span class="n">B</span><span class="o">=</span><span class="mf">0.83</span><span class="p">,</span>
+    <span class="n">Ba</span><span class="o">=</span><span class="mf">1.34</span><span class="p">,</span>
+    <span class="n">Be</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span>
+    <span class="n">Bi</span><span class="o">=</span><span class="mf">1.54</span><span class="p">,</span>
+    <span class="n">Br</span><span class="o">=</span><span class="mf">1.21</span><span class="p">,</span>
+    <span class="n">C</span><span class="o">=</span><span class="mf">0.68</span><span class="p">,</span>
+    <span class="n">Ca</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+    <span class="n">Cd</span><span class="o">=</span><span class="mf">1.69</span><span class="p">,</span>
+    <span class="n">Ce</span><span class="o">=</span><span class="mf">1.83</span><span class="p">,</span>
+    <span class="n">Cl</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+    <span class="n">Co</span><span class="o">=</span><span class="mf">1.33</span><span class="p">,</span>
+    <span class="n">Cr</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span>
+    <span class="n">Cs</span><span class="o">=</span><span class="mf">1.67</span><span class="p">,</span>
+    <span class="n">Cu</span><span class="o">=</span><span class="mf">1.52</span><span class="p">,</span>
+    <span class="n">D</span><span class="o">=</span><span class="mf">0.23</span><span class="p">,</span>
+    <span class="n">Dy</span><span class="o">=</span><span class="mf">1.75</span><span class="p">,</span>
+    <span class="n">Er</span><span class="o">=</span><span class="mf">1.73</span><span class="p">,</span>
+    <span class="n">Eu</span><span class="o">=</span><span class="mf">1.99</span><span class="p">,</span>
+    <span class="n">F</span><span class="o">=</span><span class="mf">0.64</span><span class="p">,</span>
+    <span class="n">Fe</span><span class="o">=</span><span class="mf">1.34</span><span class="p">,</span>
+    <span class="n">Ga</span><span class="o">=</span><span class="mf">1.22</span><span class="p">,</span>
+    <span class="n">Gd</span><span class="o">=</span><span class="mf">1.79</span><span class="p">,</span>
+    <span class="n">Ge</span><span class="o">=</span><span class="mf">1.17</span><span class="p">,</span>
+    <span class="n">H</span><span class="o">=</span><span class="mf">0.23</span><span class="p">,</span>
+    <span class="n">Hf</span><span class="o">=</span><span class="mf">1.57</span><span class="p">,</span>
+    <span class="n">Hg</span><span class="o">=</span><span class="mf">1.70</span><span class="p">,</span>
+    <span class="n">Ho</span><span class="o">=</span><span class="mf">1.74</span><span class="p">,</span>
+    <span class="n">I</span><span class="o">=</span><span class="mf">1.40</span><span class="p">,</span>
+    <span class="n">In</span><span class="o">=</span><span class="mf">1.63</span><span class="p">,</span>
+    <span class="n">Ir</span><span class="o">=</span><span class="mf">1.32</span><span class="p">,</span>
+    <span class="n">K</span><span class="o">=</span><span class="mf">1.33</span><span class="p">,</span>
+    <span class="n">La</span><span class="o">=</span><span class="mf">1.87</span><span class="p">,</span>
+    <span class="n">Li</span><span class="o">=</span><span class="mf">0.68</span><span class="p">,</span>
+    <span class="n">Lu</span><span class="o">=</span><span class="mf">1.72</span><span class="p">,</span>
+    <span class="n">Mg</span><span class="o">=</span><span class="mf">1.10</span><span class="p">,</span>
+    <span class="n">Mn</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span>
+    <span class="n">Mo</span><span class="o">=</span><span class="mf">1.47</span><span class="p">,</span>
+    <span class="n">N</span><span class="o">=</span><span class="mf">0.68</span><span class="p">,</span>
+    <span class="n">Na</span><span class="o">=</span><span class="mf">0.97</span><span class="p">,</span>
+    <span class="n">Nb</span><span class="o">=</span><span class="mf">1.48</span><span class="p">,</span>
+    <span class="n">Nd</span><span class="o">=</span><span class="mf">1.81</span><span class="p">,</span>
+    <span class="n">Ni</span><span class="o">=</span><span class="mf">1.50</span><span class="p">,</span>
+    <span class="n">Np</span><span class="o">=</span><span class="mf">1.55</span><span class="p">,</span>
+    <span class="n">O</span><span class="o">=</span><span class="mf">0.68</span><span class="p">,</span>
+    <span class="n">Os</span><span class="o">=</span><span class="mf">1.37</span><span class="p">,</span>
+    <span class="n">P</span><span class="o">=</span><span class="mf">1.05</span><span class="p">,</span>
+    <span class="n">Pa</span><span class="o">=</span><span class="mf">1.61</span><span class="p">,</span>
+    <span class="n">Pb</span><span class="o">=</span><span class="mf">1.54</span><span class="p">,</span>
+    <span class="n">Pd</span><span class="o">=</span><span class="mf">1.50</span><span class="p">,</span>
+    <span class="n">Pm</span><span class="o">=</span><span class="mf">1.80</span><span class="p">,</span>
+    <span class="n">Po</span><span class="o">=</span><span class="mf">1.68</span><span class="p">,</span>
+    <span class="n">Pr</span><span class="o">=</span><span class="mf">1.82</span><span class="p">,</span>
+    <span class="n">Pt</span><span class="o">=</span><span class="mf">1.50</span><span class="p">,</span>
+    <span class="n">Pu</span><span class="o">=</span><span class="mf">1.53</span><span class="p">,</span>
+    <span class="n">Ra</span><span class="o">=</span><span class="mf">1.90</span><span class="p">,</span>
+    <span class="n">Rb</span><span class="o">=</span><span class="mf">1.47</span><span class="p">,</span>
+    <span class="n">Re</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span>
+    <span class="n">Rh</span><span class="o">=</span><span class="mf">1.45</span><span class="p">,</span>
+    <span class="n">Ru</span><span class="o">=</span><span class="mf">1.40</span><span class="p">,</span>
+    <span class="n">S</span><span class="o">=</span><span class="mf">1.02</span><span class="p">,</span>
+    <span class="n">Sb</span><span class="o">=</span><span class="mf">1.46</span><span class="p">,</span>
+    <span class="n">Sc</span><span class="o">=</span><span class="mf">1.44</span><span class="p">,</span>
+    <span class="n">Se</span><span class="o">=</span><span class="mf">1.22</span><span class="p">,</span>
+    <span class="n">Si</span><span class="o">=</span><span class="mf">1.20</span><span class="p">,</span>
+    <span class="n">Sm</span><span class="o">=</span><span class="mf">1.80</span><span class="p">,</span>
+    <span class="n">Sn</span><span class="o">=</span><span class="mf">1.46</span><span class="p">,</span>
+    <span class="n">Sr</span><span class="o">=</span><span class="mf">1.12</span><span class="p">,</span>
+    <span class="n">Ta</span><span class="o">=</span><span class="mf">1.43</span><span class="p">,</span>
+    <span class="n">Tb</span><span class="o">=</span><span class="mf">1.76</span><span class="p">,</span>
+    <span class="n">Tc</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span>
+    <span class="n">Te</span><span class="o">=</span><span class="mf">1.47</span><span class="p">,</span>
+    <span class="n">Th</span><span class="o">=</span><span class="mf">1.79</span><span class="p">,</span>
+    <span class="n">Ti</span><span class="o">=</span><span class="mf">1.47</span><span class="p">,</span>
+    <span class="n">Tl</span><span class="o">=</span><span class="mf">1.55</span><span class="p">,</span>
+    <span class="n">Tm</span><span class="o">=</span><span class="mf">1.72</span><span class="p">,</span>
+    <span class="n">U</span><span class="o">=</span><span class="mf">1.58</span><span class="p">,</span>
+    <span class="n">V</span><span class="o">=</span><span class="mf">1.33</span><span class="p">,</span>
+    <span class="n">W</span><span class="o">=</span><span class="mf">1.37</span><span class="p">,</span>
+    <span class="n">Y</span><span class="o">=</span><span class="mf">1.78</span><span class="p">,</span>
+    <span class="n">Yb</span><span class="o">=</span><span class="mf">1.94</span><span class="p">,</span>
+    <span class="n">Zn</span><span class="o">=</span><span class="mf">1.45</span><span class="p">,</span>
+    <span class="n">Zr</span><span class="o">=</span><span class="mf">1.56</span><span class="p">,</span>
+<span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MolGraph">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph">[docs]</a>
+<span class="k">class</span> <span class="nc">MolGraph</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is a molecular graph class, containing several functionalities: </span>
+<span class="sd">    finding the adjancecy matrix, adjancecy list. Class modified from /xyz2graph/xyz2graph.py.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MolGraph.__slots__">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph.__slots__">[docs]</a>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;elements&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;x&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;y&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;z&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;adj_list&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;atomic_radii&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;bond_lengths&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;adj_matrix&quot;</span><span class="p">,</span>
+    <span class="p">]</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="MolGraph.elements">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph.elements">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="MolGraph.x">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph.x">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="MolGraph.y">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph.y">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="MolGraph.z">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph.z">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="MolGraph.adj_list">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph.adj_list">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adj_list</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="MolGraph.atomic_radii">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph.atomic_radii">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atomic_radii</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="MolGraph.bond_lengths">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph.bond_lengths">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bond_lengths</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="MolGraph.adj_matrix">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph.adj_matrix">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adj_matrix</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MolGraph.read_xyz_coord_from_mf">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph.read_xyz_coord_from_mf">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_xyz_coord_from_mf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reads elements and coordinates from morfeus, searches for elements and their cartesian coordinates</span>
+<span class="sd">        and adds them to corresponding arrays.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[:]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">atomic_radii</span> <span class="o">=</span> <span class="p">[</span><span class="n">atomic_radii</span><span class="p">[</span><span class="n">element</span><span class="p">]</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generate_adjacency_list</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MolGraph._generate_adjacency_list">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.MolGraph._generate_adjacency_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">_generate_adjacency_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates an adjacency list from atomic cartesian coordinates.&quot;&quot;&quot;</span>
+
+        <span class="n">node_ids</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">))</span>
+        <span class="n">xyz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">xyz</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijk-&gt;ij&quot;</span><span class="p">,</span> <span class="n">distances</span><span class="p">,</span> <span class="n">distances</span><span class="p">))</span>
+
+        <span class="n">atomic_radii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atomic_radii</span><span class="p">)</span>
+        <span class="n">distance_bond</span> <span class="o">=</span> <span class="p">(</span><span class="n">atomic_radii</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">+</span> <span class="n">atomic_radii</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.3</span>
+
+        <span class="n">adj_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="mf">0.1</span> <span class="o">&lt;</span> <span class="n">distances</span><span class="p">,</span> <span class="n">distance_bond</span> <span class="o">&gt;</span> <span class="n">distances</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">adj_matrix</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adj_list</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adj_list</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bond_lengths</span><span class="p">[</span><span class="nb">frozenset</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">distance_bond</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="mi">5</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">adj_matrix</span> <span class="o">=</span> <span class="n">adj_matrix</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="bfs">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.bfs">[docs]</a>
+<span class="k">def</span> <span class="nf">bfs</span><span class="p">(</span><span class="n">visited</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function is a classic breadth-first traversal algorithm. It is applied to find all the subgraphs</span>
+<span class="sd">    when the metal center is removed.</span>
+
+<span class="sd">    :param visited:</span>
+<span class="sd">    :param graph:</span>
+<span class="sd">    :param node:</span>
+<span class="sd">    </span>
+<span class="sd">    :return visited: </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="n">visited</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">neighbour</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">neighbour</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                <span class="n">visited</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">neighbour</span><span class="p">)</span>
+                <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">neighbour</span><span class="p">)</span>
+                
+    <span class="k">return</span> <span class="n">visited</span></div>
+
+
+
+<div class="viewcode-block" id="extract_ligand_and_write_xyz">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.extract_ligand_and_write_xyz">[docs]</a>
+<span class="k">def</span> <span class="nf">extract_ligand_and_write_xyz</span><span class="p">(</span><span class="n">ligand</span><span class="p">,</span> <span class="n">bidentate</span><span class="p">,</span> <span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function extracts the ligand from the complex and writes the xyz file of the ligand. The comment line will</span>
+<span class="sd">    contain the indices of the donor atoms.</span>
+<span class="sd">    :param ligand: list of indices of the ligand atoms</span>
+<span class="sd">    :param bidentate: list of metal center, donor 1, donor 2 indices</span>
+<span class="sd">    :param path_to_workflow: path to the workflow folder (where the xyz files will be written)</span>
+<span class="sd">    :param filename: filename of the complex file, which will be used to name the xyz file</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">xyz_filename</span> <span class="o">=</span> <span class="s1">&#39;free_ligand_&#39;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;.xyz&#39;</span>
+    <span class="k">if</span> <span class="n">elements</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># get elements, coords of the ligand and write xyz file</span>
+        <span class="c1"># ligands contains the indices of the ligand atoms, so we can use it to extract the elements and coords</span>
+        <span class="n">ligand_elements</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">ligand</span><span class="p">]</span>
+        <span class="n">ligand_coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">ligand</span><span class="p">]</span>
+        <span class="c1"># donors will be shifted due to the extraction of the ligand atoms, so we need to find the indices again based on their coordinates</span>
+        <span class="n">ligand_bidentate_1_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">ligand_coordinates</span> <span class="o">==</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">bidentate</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ligand_bidentate_2_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">ligand_coordinates</span> <span class="o">==</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">bidentate</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># write bidentate indices in dictionary to comment line of xyz file</span>
+        <span class="n">comment</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;complex_bidentate_1_index&#39;</span><span class="p">:</span> <span class="n">bidentate</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;complex_bidentate_2_index&#39;</span><span class="p">:</span> <span class="n">bidentate</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;free_ligand_bidentate_1_index&#39;</span><span class="p">:</span> <span class="n">ligand_bidentate_1_index</span><span class="p">,</span> <span class="s1">&#39;free_ligand_bidentate_2_index&#39;</span><span class="p">:</span> <span class="n">ligand_bidentate_2_index</span><span class="p">}</span>
+        <span class="n">comment</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">comment</span><span class="p">)]</span>
+        <span class="n">write_xyz</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">xyz_filename</span><span class="p">),</span> <span class="n">ligand_elements</span><span class="p">,</span> <span class="n">ligand_coordinates</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">elements</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">coordinates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error writing xyz for: &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Make sure to check the geometry&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="molecular_graph">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.molecular_graph">[docs]</a>
+<span class="k">def</span> <span class="nf">molecular_graph</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">extract_ligand</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">path_to_workflow</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function is applied to find the molecular graph of a TM complex.</span>
+<span class="sd">    This function returns the indices of all atoms making the investigated and the indices forming the bite angle.</span>
+
+<span class="sd">    :param elements:</span>
+<span class="sd">    :param coordinates:</span>
+
+<span class="sd">    :return ligand, bidentate:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">metal_centers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Rh&#39;</span><span class="p">,</span> <span class="s1">&#39;Ru&#39;</span><span class="p">,</span> <span class="s1">&#39;Mn&#39;</span><span class="p">,</span> <span class="s1">&#39;Pd&#39;</span><span class="p">,</span> 
+                     <span class="s1">&#39;Ir&#39;</span><span class="p">,</span> <span class="s1">&#39;Pt&#39;</span><span class="p">,</span> <span class="s1">&#39;Co&#39;</span><span class="p">,</span> <span class="s1">&#39;Ni&#39;</span><span class="p">]</span>
+
+    <span class="n">periodic_table</span> <span class="o">=</span> <span class="p">[</span><span class="n">element</span><span class="o">.</span><span class="n">symbol</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">periodictable</span><span class="o">.</span><span class="n">elements</span><span class="p">]</span>
+    
+    <span class="c1">### Check if elements coming from morfeus are given as numbers.</span>
+    <span class="c1"># If not, make conversion using the periodic table package.</span>
+    
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">elem_id</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">elements</span><span class="p">):</span>    
+            <span class="n">elements</span><span class="p">[</span><span class="n">elem_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">periodic_table</span><span class="p">[</span><span class="n">element</span><span class="p">]</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
+    
+    <span class="c1">### Call to the MolGraph() functionality </span>
+    <span class="n">mg</span> <span class="o">=</span> <span class="n">MolGraph</span><span class="p">()</span>
+    <span class="n">mg</span><span class="o">.</span><span class="n">read_xyz_coord_from_mf</span><span class="p">(</span><span class="n">elements</span><span class="o">=</span><span class="n">elements</span><span class="p">,</span><span class="n">coordinates</span><span class="o">=</span><span class="n">coordinates</span><span class="p">)</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">mg</span><span class="o">.</span><span class="n">adj_list</span>
+
+    <span class="n">metal_center_id</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">elem_id</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">elements</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">metal_centers</span><span class="p">:</span>
+           <span class="n">metal_center_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elem_id</span><span class="p">)</span>
+           <span class="k">break</span>
+
+    <span class="c1"># if metal center is in the structure we are dealing with a complex and we can search for the ligands</span>
+    <span class="c1"># if there is no metal center in the structure, we are dealing with a free ligand and we can skip the ligand search</span>
+    <span class="k">if</span> <span class="n">metal_center_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">metal_center_bonds_</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">metal_center_id</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">graph</span><span class="p">[</span><span class="n">metal_center_id</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">bonds_to_atom</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">graph</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">graph</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">bonds_to_atom</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">bond_id</span><span class="p">,</span> <span class="n">bond</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bonds_to_atom</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">bond</span> <span class="o">==</span> <span class="n">metal_center_id</span><span class="p">:</span>
+                    <span class="n">graph</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">bond_id</span><span class="p">)</span>
+
+        <span class="n">store_ligands</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">metal_center_bonds_</span><span class="p">:</span>
+            <span class="n">store_ligands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">bfs</span><span class="p">([],</span> <span class="n">graph</span><span class="p">,</span> <span class="n">node</span><span class="p">))))</span>
+
+        <span class="c1"># Remove duplicates and store in new list --&gt; clean_ligands</span>
+        <span class="n">clean_ligands</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">ligand</span> <span class="ow">in</span> <span class="n">store_ligands</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ligand</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">clean_ligands</span><span class="p">:</span>
+                <span class="n">clean_ligands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ligand</span><span class="p">)</span>
+
+
+        <span class="c1"># store the size of the ligands in a list</span>
+        <span class="n">ligand_sizes</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">ligand</span> <span class="ow">in</span> <span class="n">clean_ligands</span><span class="p">:</span>
+            <span class="n">ligand_sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ligand</span><span class="p">))</span>
+
+        <span class="c1"># This part checks whether two ligands have the max length</span>
+        <span class="n">index_max_ligand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">ligand_sizes</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">ligand_sizes</span><span class="p">))</span>
+        <span class="c1"># Flattens 2D array</span>
+        <span class="n">index_max_ligand</span> <span class="o">=</span> <span class="n">index_max_ligand</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="c1"># Check if two monodentate ligands instead of one single bidentate ligand</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">index_max_ligand</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">ligand</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">ligand</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">clean_ligands</span><span class="p">[</span><span class="n">index_max_ligand</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+            <span class="n">ligand</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">clean_ligands</span><span class="p">[</span><span class="n">index_max_ligand</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ligand</span> <span class="o">=</span> <span class="n">clean_ligands</span><span class="p">[</span><span class="n">index_max_ligand</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+        <span class="c1"># Store metal id in a list</span>
+        <span class="n">bidentate</span> <span class="o">=</span> <span class="p">[</span><span class="n">metal_center_id</span><span class="p">]</span>
+        <span class="c1"># Extend bidentate atoms with the donating atoms</span>
+        <span class="c1"># do loop twice, first only add P, N, S atoms, if there is only 1 atom of these types (so bidentate list only contains</span>
+        <span class="c1"># metal center and 1 donor atom), also add O atoms</span>
+        <span class="k">for</span> <span class="n">bond_to_metal</span> <span class="ow">in</span> <span class="n">metal_center_bonds_</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bond_to_metal</span> <span class="ow">in</span> <span class="n">ligand</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">elements</span><span class="p">[</span><span class="n">bond_to_metal</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;P&#39;</span> <span class="ow">or</span> <span class="n">elements</span><span class="p">[</span><span class="n">bond_to_metal</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span> <span class="ow">or</span> <span class="n">elements</span><span class="p">[</span><span class="n">bond_to_metal</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;S&#39;</span><span class="p">:</span>
+                    <span class="n">bidentate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond_to_metal</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bidentate</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">bond_to_metal</span> <span class="ow">in</span> <span class="n">metal_center_bonds_</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">bond_to_metal</span> <span class="ow">in</span> <span class="n">ligand</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">elements</span><span class="p">[</span><span class="n">bond_to_metal</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+                        <span class="n">bidentate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond_to_metal</span><span class="p">)</span>
+
+        <span class="c1"># Check whether more atoms are taken as donating: especially important for the pristine structures</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bidentate</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="c1"># check atom type</span>
+            <span class="c1"># new_bidentate = [metal_center_id]</span>
+
+            <span class="c1">### Check whether the atom is P, N or S and rewrite the bidentate list with only these types</span>
+
+            <span class="c1"># for ligating_atom in bidentate:</span>
+            <span class="c1">#     if (elements[ligating_atom] == &#39;N&#39;) or (elements[ligating_atom] == &#39;P&#39;) or (elements[ligating_atom] == &#39;S&#39;):</span>
+            <span class="c1">#         new_bidentate.append(ligating_atom)</span>
+
+            <span class="c1">### Check two closest donors to the metal center.</span>
+
+            <span class="c1"># if len(new_bidentate) == 2:</span>
+            <span class="c1">#     ligand = list(ligand)</span>
+            <span class="c1">#     if we need to write the xyz file we want to extract only the ligand atoms</span>
+                <span class="c1"># if extract_ligand is True and path_to_workflow is not None and filename is not None:</span>
+                <span class="c1">#     extract_ligand_and_write_xyz(ligand, new_bidentate, path_to_workflow, filename)</span>
+                <span class="c1">#</span>
+                <span class="c1"># ligand.append(metal_center_id)</span>
+                <span class="c1"># ligand_metal = np.array(ligand)</span>
+                <span class="c1"># return ligand_metal, new_bidentate</span>
+            <span class="c1">#</span>
+            <span class="c1"># else:</span>
+            <span class="n">dict_distances</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">new_bidentate</span> <span class="o">=</span> <span class="n">bidentate</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="k">for</span> <span class="n">ligating_atom</span> <span class="ow">in</span> <span class="n">new_bidentate</span><span class="p">:</span>
+                <span class="n">dict_distances</span><span class="p">[</span><span class="n">ligating_atom</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">coordinates</span><span class="p">[</span><span class="n">metal_center_id</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">ligating_atom</span><span class="p">,</span> <span class="p">:])</span>
+
+            <span class="n">dict_distances</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dict_distances</span><span class="o">.</span><span class="n">items</span><span class="p">())}</span>
+
+            <span class="c1"># Sort dictionary according to bond length to the metal center</span>
+            <span class="n">dict_distances</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">dict_distances</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+            <span class="n">new_bidentate</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">new_bidentate</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">metal_center_id</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">dict_distances</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="n">dict_distances</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">1</span><span class="p">]])</span>
+
+            <span class="n">ligand</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ligand</span><span class="p">)</span>
+            <span class="c1"># if we need to write the xyz file we want to extract only the ligand atoms</span>
+            <span class="k">if</span> <span class="n">extract_ligand</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">path_to_workflow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">extract_ligand_and_write_xyz</span><span class="p">(</span><span class="n">ligand</span><span class="p">,</span> <span class="n">new_bidentate</span><span class="p">,</span> <span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+            <span class="n">ligand</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metal_center_id</span><span class="p">)</span>
+            <span class="n">ligand_metal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ligand</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ligand_metal</span><span class="p">,</span> <span class="n">new_bidentate</span>
+
+        <span class="n">ligand</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ligand</span><span class="p">)</span>
+        <span class="c1"># if we need to write the xyz file we want to extract only the ligand atoms</span>
+        <span class="k">if</span> <span class="n">extract_ligand</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">path_to_workflow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">extract_ligand_and_write_xyz</span><span class="p">(</span><span class="n">ligand</span><span class="p">,</span> <span class="n">bidentate</span><span class="p">,</span> <span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+        <span class="c1"># return the ligand and the metal center for descriptor calculation</span>
+        <span class="n">ligand</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metal_center_id</span><span class="p">)</span>
+        <span class="n">ligand_metal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ligand</span><span class="p">)</span>
+        <span class="c1"># ligand_metal is the ligand + the metal center indices. Bidentate is the metal center + the two donor atoms indices</span>
+        <span class="k">return</span> <span class="n">ligand_metal</span><span class="p">,</span> <span class="n">bidentate</span>
+    <span class="c1"># if we are dealing with the free ligand we only need to return the donor atoms</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># ToDo: return all P, N, S atoms (how to find out which ones are donor atoms? distance between them?)</span>
+        <span class="k">pass</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">glob</span>
+    <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<div class="viewcode-block" id="path_to_workflow">
+<a class="viewcode-back" href="../../autoapi/obelix/molecular_graph/index.html#obelix.molecular_graph.path_to_workflow">[docs]</a>
+    <span class="n">path_to_workflow</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span></div>
+
+    <span class="c1"># testing -- testing successful on xyz and log</span>
+    <span class="n">complexes_to_calc_descriptors</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="s1">&#39;*.log&#39;</span><span class="p">))</span>
+    <span class="n">dictionary_for_properties</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># iterate over log files and extract the free ligand as an xyz file</span>
+    <span class="k">for</span> <span class="n">metal_ligand_complex</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">complexes_to_calc_descriptors</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">metal_ligand_complex</span><span class="p">)</span>
+        <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="n">read_cclib</span><span class="p">(</span><span class="n">metal_ligand_complex</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># if this is true, there is only 1 coordinates array</span>
+            <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">base_with_extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">metal_ligand_complex</span><span class="p">)</span>
+        <span class="n">split_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">base_with_extension</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">split_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">molecular_graph</span><span class="p">(</span><span class="n">elements</span><span class="o">=</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="o">=</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">extract_ligand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">path_to_workflow</span><span class="o">=</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">))</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

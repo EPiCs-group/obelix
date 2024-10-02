@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>obelix.free_ligand &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            obelix
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">obelix.free_ligand</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for obelix.free_ligand</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#                                                     #</span>
+<span class="c1">#  __author__ = Adarsh Kalikadien                     #</span>
+<span class="c1">#  __institution__ = TU Delft                         #</span>
+<span class="c1">#  __contact__ = a.v.kalikadien@tudelft.nl            #</span>
+<span class="c1"># use the extracted xyz (via obelix) and the DFT log file of the free ligand to calculate descriptors</span>
+<span class="c1"># generally only the electronic descriptors are extracted from the DFT log file since the steric/geometric descriptors</span>
+<span class="c1"># are already calculated for the ligand (only the ligand) in the complex (via obelix)</span>
+<span class="kn">import</span> <span class="nn">ast</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">xtb.utils</span>  <span class="c1"># comment this when working on windows</span>
+<span class="kn">import</span> <span class="nn">morfeus</span>
+<span class="kn">from</span> <span class="nn">morfeus.io</span> <span class="kn">import</span> <span class="n">write_xyz</span><span class="p">,</span> <span class="n">read_cclib</span>
+
+<span class="kn">from</span> <span class="nn">obelix.dft_extraction</span> <span class="kn">import</span> <span class="n">DFTExtractor</span>
+<span class="kn">from</span> <span class="nn">obelix.descriptor_calculator</span> <span class="kn">import</span> <span class="n">Descriptors</span>
+<span class="kn">from</span> <span class="nn">obelix.tools.utilities</span> <span class="kn">import</span> <span class="n">dataframe_from_dictionary</span>
+
+
+<div class="viewcode-block" id="FreeLigand">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand">[docs]</a>
+<span class="k">class</span> <span class="nc">FreeLigand</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">xyz_filename</span><span class="p">,</span> <span class="n">dft_log_file</span><span class="p">):</span>
+        <span class="c1"># the code expects the extracted xyz file of the free ligand and the DFT log file in the same directory</span>
+<div class="viewcode-block" id="FreeLigand.path_to_workflow">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.path_to_workflow">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_to_workflow</span> <span class="o">=</span> <span class="n">path_to_workflow</span></div>
+
+<div class="viewcode-block" id="FreeLigand.xyz_filename">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.xyz_filename">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xyz_filename</span> <span class="o">=</span> <span class="n">xyz_filename</span></div>
+
+
+        <span class="c1"># it is possible that the bidentate indices are different in the free ligand and complex, hence we need to</span>
+        <span class="c1"># read the bidentate indices from the extraced ligand&#39;s xyz file (stored on the second line by obelix)</span>
+<div class="viewcode-block" id="FreeLigand.complex_xyz_bidentate_1_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.complex_xyz_bidentate_1_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complex_xyz_bidentate_1_idx</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FreeLigand.complex_xyz_bidentate_2_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.complex_xyz_bidentate_2_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complex_xyz_bidentate_2_idx</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FreeLigand.free_ligand_xyz_bidentate_1_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.free_ligand_xyz_bidentate_1_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_1_idx</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FreeLigand.free_ligand_xyz_bidentate_2_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.free_ligand_xyz_bidentate_2_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_2_idx</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xyz_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xyz_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">xyz_filename</span><span class="p">)</span>
+            <span class="c1"># read the string on the second line of the xyz file and try to convert to dict</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz_filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="c1"># read the 0-indexed bidentate indices from the dict and store in class</span>
+                    <span class="c1"># we add + 1 to it since Morfeus and DFTExtractor expect 1-indexed indices</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">complex_xyz_bidentate_1_idx</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="s1">&#39;complex_bidentate_1_index&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">complex_xyz_bidentate_2_idx</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="s1">&#39;complex_bidentate_2_index&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_1_idx</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="s1">&#39;free_ligand_bidentate_1_index&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_2_idx</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="s1">&#39;free_ligand_bidentate_2_index&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The second line of the free ligand xyz file is not a dict&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="FreeLigand.dft_log_file">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.dft_log_file">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dft_log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">dft_log_file</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FreeLigand.dft">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.dft">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dft</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># the DFTExtractor class for this free ligand</span></div>
+
+<div class="viewcode-block" id="FreeLigand.descriptor_calculator">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.descriptor_calculator">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_calculator</span> <span class="o">=</span> <span class="n">Descriptors</span><span class="p">(</span><span class="n">central_atom</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                 <span class="n">path_to_workflow</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path_to_workflow</span><span class="p">,</span>
+                                                 <span class="n">output_type</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">)</span></div>
+
+        <span class="c1"># self.descriptor_df = None # the dataframe containing the descriptors for a set of free ligands</span>
+
+        <span class="c1"># these will be used by morfeus, so we need to convert to 1-indexed later</span>
+<div class="viewcode-block" id="FreeLigand.metal_center_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.metal_center_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># this will remain None since we are not using a metal center</span></div>
+
+<div class="viewcode-block" id="FreeLigand._min_donor_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand._min_donor_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min_donor_idx</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FreeLigand._max_donor_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand._max_donor_idx">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_donor_idx</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="FreeLigand.initialize_dft_extractor">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.initialize_dft_extractor">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize_dft_extractor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_file</span><span class="p">,</span> <span class="n">metal_center_idx</span><span class="p">,</span> <span class="n">min_donor_idx</span><span class="p">,</span> <span class="n">max_donor_idx</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="p">):</span>
+        <span class="c1"># initialize the DFTExtractor class using the given log file and the bidentate indices</span>
+        <span class="c1"># having this function allows us to give the bidentate indices as input or determine them</span>
+        <span class="n">dft</span> <span class="o">=</span> <span class="n">DFTExtractor</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="n">metal_center_idx</span><span class="p">,</span> <span class="n">min_donor_idx</span><span class="p">,</span> <span class="n">max_donor_idx</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dft</span> <span class="o">=</span> <span class="n">dft</span>
+        <span class="k">return</span> <span class="n">dft</span></div>
+
+
+<div class="viewcode-block" id="FreeLigand.assign_min_max_donor_xtb">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.assign_min_max_donor_xtb">[docs]</a>
+    <span class="k">def</span> <span class="nf">assign_min_max_donor_xtb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">calculation_method</span><span class="o">=</span><span class="s1">&#39;gfn2_xtb&#39;</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">xtb</span> <span class="o">=</span> <span class="n">morfeus</span><span class="o">.</span><span class="n">XTB</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">solvent</span><span class="p">)</span>
+        <span class="n">atomic_charges</span> <span class="o">=</span> <span class="n">xtb</span><span class="o">.</span><span class="n">get_charges</span><span class="p">()</span>  <span class="c1"># determine min/max donor based on xTB charge of the donor atoms</span>
+        <span class="n">charge_bidentate_1</span> <span class="o">=</span> <span class="n">atomic_charges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_1_idx</span><span class="p">]</span>
+        <span class="n">charge_bidentate_2</span> <span class="o">=</span> <span class="n">atomic_charges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_2_idx</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">charge_bidentate_1</span> <span class="o">&gt;</span> <span class="n">charge_bidentate_2</span><span class="p">:</span>
+            <span class="c1"># this means that bidentate 1 is max donor (charge is less negative, so stronger donor)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_1_idx</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_min_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_2_idx</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># this means that bidentate 2 is max donor</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_2_idx</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_min_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_1_idx</span></div>
+
+
+<div class="viewcode-block" id="FreeLigand.assign_min_max_donor_dft">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.assign_min_max_donor_dft">[docs]</a>
+    <span class="k">def</span> <span class="nf">assign_min_max_donor_dft</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dft</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Initialize the DFTExtractor class first&#39;</span><span class="p">)</span>
+        <span class="c1"># determine min/max donor based on DFT charge of the donor atoms</span>
+        <span class="n">natural_charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dft</span><span class="o">.</span><span class="n">extract_natural_charges</span><span class="p">()</span>
+        <span class="n">charge_bidentate_1</span> <span class="o">=</span> <span class="n">natural_charges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_1_idx</span><span class="p">]</span>
+        <span class="n">charge_bidentate_2</span> <span class="o">=</span> <span class="n">natural_charges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_2_idx</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">charge_bidentate_1</span> <span class="o">&gt;</span> <span class="n">charge_bidentate_2</span><span class="p">:</span>
+            <span class="c1"># this means that bidentate 1 is max donor (charge is less negative, so stronger donor)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_1_idx</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_min_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_2_idx</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># this means that bidentate 2 is max donor</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_2_idx</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_min_donor_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_ligand_xyz_bidentate_1_idx</span>
+
+        <span class="c1"># reinitialize the DFTExtractor class with the new min/max donor indices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize_dft_extractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dft_log_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_donor_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_donor_idx</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="s1">&#39;pristine&#39;</span><span class="p">)</span></div>
+
+
+    <span class="c1"># it&#39;s possible that the min/max donor can be set externally (e.g. from an excel file with min/max from the complex)</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="FreeLigand.min_donor_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.min_donor_idx">[docs]</a>
+    <span class="k">def</span> <span class="nf">min_donor_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_donor_idx</span></div>
+
+
+    <span class="nd">@min_donor_idx</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">min_donor_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_donor_idx</span><span class="p">):</span>
+        <span class="c1"># ToDo: check if this is a valid index before setting it</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min_donor_idx</span> <span class="o">=</span> <span class="n">min_donor_idx</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="FreeLigand.max_donor_idx">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.max_donor_idx">[docs]</a>
+    <span class="k">def</span> <span class="nf">max_donor_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_donor_idx</span></div>
+
+
+    <span class="nd">@max_donor_idx</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">max_donor_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_donor_idx</span><span class="p">):</span>
+        <span class="c1"># ToDo: check if this is a valid index before setting it</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_donor_idx</span> <span class="o">=</span> <span class="n">max_donor_idx</span>
+
+    <span class="c1"># use the Descriptor class and _calculate_dft_descriptors_from_log to calculate the DFT descriptors</span>
+<div class="viewcode-block" id="FreeLigand.calculate_dft_descriptors">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.FreeLigand.calculate_dft_descriptors">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_dft_descriptors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extract_xyz_from_log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">printout</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># for the free ligand we need to have the extracted xyz file to get the bidentate indices and the matching</span>
+        <span class="c1"># log file to get the DFT data, hence we cannot iterate over log files like we did in obelix.Descriptors.calculate_dft_descriptors</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">base_with_extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dft_log_file</span><span class="p">)</span>
+        <span class="n">split_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">base_with_extension</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">split_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Calculating descriptors for:&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;filename_tud&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;index_donor_min&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_donor_idx</span>
+        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;index_donor_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_donor_idx</span>
+
+        <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="c1"># error catching for reading elements and coordinates from log file</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="n">read_cclib</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dft_log_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># if this is true, there is only 1 coordinates array</span>
+                <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span>
+                    <span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># else morfeus descriptors are calculated for last geometry in log file</span>
+            <span class="n">elements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error reading elements and coordinates from log file for: &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Make sure to check the geometry&#39;</span><span class="p">)</span>
+
+        <span class="c1"># calculate DFT descriptors from Gaussian log file</span>
+        <span class="c1"># get indices of bidentate ligands and metal for descriptor calculation class</span>
+        <span class="n">dft_properties</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dft</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Initializing DFTExtractor class&#39;</span><span class="p">)</span>
+                <span class="n">dft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_dft_extractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dft_log_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metal_center_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_donor_idx</span><span class="p">,</span>
+                                                    <span class="bp">self</span><span class="o">.</span><span class="n">_max_donor_idx</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="s1">&#39;pristine&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dft</span>
+            <span class="n">dft_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_calculator</span><span class="o">.</span><span class="n">_calculate_dft_descriptors_from_log</span><span class="p">(</span><span class="n">dft</span><span class="p">,</span> <span class="n">dft_properties</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DFT descriptor calculation failed for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dft_properties</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">properties</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dft_properties</span><span class="p">)</span>
+
+        <span class="c1"># write xyz for log file</span>
+        <span class="k">if</span> <span class="n">extract_xyz_from_log</span><span class="p">:</span>
+            <span class="n">dft_xyz_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dft_log_file</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_DFT.xyz&#39;</span>
+            <span class="k">if</span> <span class="n">elements</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">write_xyz</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path_to_workflow</span><span class="p">,</span> <span class="n">dft_xyz_filename</span><span class="p">),</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">elements</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">coordinates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error writing xyz for: &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Make sure to check the geometry&#39;</span><span class="p">)</span>
+
+        <span class="c1"># now all properties need to have free_ligand_ prefix to distinguish them from the complex descriptors</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">properties</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">properties</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;free_ligand_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="c1"># merging all properties into one dictionary can now be done outside of this class</span>
+        <span class="c1"># unlike in obelix.Descriptors.calculate_dft_descriptors</span>
+        <span class="k">return</span> <span class="n">properties</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># example usage</span>
+<div class="viewcode-block" id="ligand_number_list">
+<a class="viewcode-back" href="../../autoapi/obelix/free_ligand/index.html#obelix.free_ligand.ligand_number_list">[docs]</a>
+    <span class="n">ligand_number_list</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;L</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span></div>
+
+    <span class="n">dictionary_for_properties</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">ligand_number</span> <span class="ow">in</span> <span class="n">ligand_number_list</span><span class="p">:</span>
+        <span class="c1"># files are located in ../tests/files</span>
+        <span class="n">path_to_test_files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;tests&#39;</span><span class="p">,</span> <span class="s1">&#39;files&#39;</span><span class="p">)</span>
+        <span class="n">free_ligand</span> <span class="o">=</span> <span class="n">FreeLigand</span><span class="p">(</span><span class="n">path_to_test_files</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;free_ligand_</span><span class="si">{</span><span class="n">ligand_number</span><span class="si">}</span><span class="s1">.xyz&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;free_ligand_</span><span class="si">{</span><span class="n">ligand_number</span><span class="si">}</span><span class="s1">_SP.log&#39;</span><span class="p">)</span>
+        <span class="n">free_ligand</span><span class="o">.</span><span class="n">initialize_dft_extractor</span><span class="p">(</span><span class="n">free_ligand</span><span class="o">.</span><span class="n">dft_log_file</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">free_ligand</span><span class="o">.</span><span class="n">_min_donor_idx</span><span class="p">,</span> <span class="n">free_ligand</span><span class="o">.</span><span class="n">_max_donor_idx</span><span class="p">,</span> <span class="n">metal_adduct</span><span class="o">=</span><span class="s1">&#39;pristine&#39;</span><span class="p">)</span>
+        <span class="c1"># print(free_ligand.min_donor_idx)</span>
+        <span class="n">free_ligand</span><span class="o">.</span><span class="n">assign_min_max_donor_dft</span><span class="p">()</span>
+        <span class="c1"># print(free_ligand.min_donor_idx)</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="n">free_ligand</span><span class="o">.</span><span class="n">calculate_dft_descriptors</span><span class="p">()</span>
+        <span class="n">dictionary_for_properties</span><span class="p">[</span><span class="n">ligand_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span>
+    <span class="n">new_descriptor_df</span> <span class="o">=</span> <span class="n">dataframe_from_dictionary</span><span class="p">(</span><span class="n">dictionary_for_properties</span><span class="p">)</span>
+    <span class="c1"># reset the index and name that column to &#39;Ligand#&#39; for consistency with the complex descriptor df</span>
+    <span class="n">new_descriptor_df</span> <span class="o">=</span> <span class="n">new_descriptor_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="s1">&#39;Ligand#&#39;</span><span class="p">})</span>
+    <span class="n">new_descriptor_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;test_free_ligand_descriptors.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
