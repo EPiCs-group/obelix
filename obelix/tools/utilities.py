@@ -83,7 +83,7 @@ def add_code_to_structure():
     
 
 def change_second_line_xyz(xyz, new_content=''):
-    with open('{}'.format(xyz), 'r', newline='\n') as file:
+    with open('{}'.format(xyz), 'r') as file:
         # read a list of lines into data
         data = file.readlines()
     # now change the 2nd line, note that you have to add a newline
