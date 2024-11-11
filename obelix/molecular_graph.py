@@ -193,7 +193,7 @@ def bfs(visited, graph, node):
     return visited
 
 
-def extract_ligand_and_write_xyz(ligand, bidentate, path_to_workflow, filename):
+def extract_ligand_and_write_xyz(elements, coordinates,ligand, bidentate, path_to_workflow, filename):
     """
     This function extracts the ligand from the complex and writes the xyz file of the ligand. The comment line will
     contain the indices of the donor atoms.
@@ -356,7 +356,7 @@ def molecular_graph(elements, coordinates, extract_ligand=False, path_to_workflo
             ligand = list(ligand)
             # if we need to write the xyz file we want to extract only the ligand atoms
             if extract_ligand is True and path_to_workflow is not None and filename is not None:
-                extract_ligand_and_write_xyz(ligand, new_bidentate, path_to_workflow, filename)
+                extract_ligand_and_write_xyz(elements, coordinates, ligand, new_bidentate, path_to_workflow, filename)
 
             ligand.append(metal_center_id)
             ligand_metal = np.array(ligand)
@@ -365,7 +365,7 @@ def molecular_graph(elements, coordinates, extract_ligand=False, path_to_workflo
         ligand = list(ligand)
         # if we need to write the xyz file we want to extract only the ligand atoms
         if extract_ligand is True and path_to_workflow is not None and filename is not None:
-            extract_ligand_and_write_xyz(ligand, bidentate, path_to_workflow, filename)
+            extract_ligand_and_write_xyz(elements, coordinates, ligand, bidentate, path_to_workflow, filename)
 
         # return the ligand and the metal center for descriptor calculation
         ligand.append(metal_center_id)
