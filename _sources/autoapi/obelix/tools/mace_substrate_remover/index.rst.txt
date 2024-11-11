@@ -1,0 +1,38 @@
+obelix.tools.mace_substrate_remover
+===================================
+
+.. py:module:: obelix.tools.mace_substrate_remover
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   obelix.tools.mace_substrate_remover.data_path
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   obelix.tools.mace_substrate_remover.remove_substrate
+
+
+Module Contents
+---------------
+
+.. py:function:: remove_substrate(substrate_SMILES, ligand_keys, data_path)
+
+   This function removes the substrate from MACE generated xyz files.
+   args:
+   substrate_SMILES: SMILES of substrate in list format
+   ligand_keys: name of ligands in list format, can be multiple ligands
+   data_path: path to xyz files, can contain multiple xyz files
+   metal_center: metal center of complexes in string format, used for convenient naming of new xyz file
+   return: xyz files without substrate, denoted wuth the suffix "no_substrate", saved in a new directory called substrate_removed
+
+
+.. py:data:: data_path
+

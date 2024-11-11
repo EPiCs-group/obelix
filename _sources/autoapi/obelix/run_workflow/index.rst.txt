@@ -1,0 +1,164 @@
+obelix.run_workflow
+===================
+
+.. py:module:: obelix.run_workflow
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   obelix.run_workflow.ligand_excel_file
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   obelix.run_workflow.MACE
+   obelix.run_workflow.Workflow
+
+
+Module Contents
+---------------
+
+.. py:class:: MACE(bidentate, CA, name_of_xyz)
+
+   .. py:attribute:: CA
+
+
+   .. py:attribute:: name_of_xyz
+
+
+   .. py:attribute:: bidentate
+
+
+   .. py:method:: find_bidentate(mol, metal_atom_atomic_number)
+      :staticmethod:
+
+
+      Find indices of bidentate ligand if functions implemented in MACE class are not working or if
+      structure was made manually and there is no mapped SMILES string
+
+      :param mol: RDKit mol object
+      :param metal_atom_atomic_number:
+
+      Returns: list of bidentate atom indices
+
+
+
+
+   .. py:method:: generate_complex_SP_xyz(auxiliary_ligands=[])
+
+
+   .. py:method:: generate_complex_OH_xyz(auxiliary_ligands=[], substrate=[])
+
+
+.. py:class:: Workflow(mace_input=[], chemspax_input=[], crest_input=[], path_to_workflow=[], descriptor_calculator_input=[], geom='SP')
+
+   .. py:attribute:: mace_input
+
+
+   .. py:attribute:: chemspax_input
+
+
+   .. py:attribute:: crest_input
+
+
+   .. py:attribute:: path_to_workflow
+
+
+   .. py:attribute:: descriptor_calculator_input
+
+
+   .. py:attribute:: bidentate_1_index
+      :value: None
+
+
+
+   .. py:attribute:: bidentate_2_index
+      :value: None
+
+
+
+   .. py:attribute:: metal_index
+      :value: None
+
+
+
+   .. py:attribute:: mace_skeletons
+
+
+   .. py:attribute:: geom
+
+
+   .. py:attribute:: solvent
+      :value: None
+
+
+
+   .. py:method:: initialize_mace()
+
+
+   .. py:method:: initialize_chemspax()
+
+
+   .. py:method:: initialize_crest()
+
+
+   .. py:method:: initialize_descriptor_calculator()
+
+
+   .. py:method:: prepare_folder_structure()
+
+
+   .. py:method:: run_mace()
+
+
+   .. py:method:: run_chemspax(names, functionalization_list)
+
+      Run chemspax from the pip installable package chemspax.
+      Use prepare_data(...) to prepare the substituents.
+      Then run main(...) to functionalize the skeletons prepared by MACE.
+
+
+
+
+   .. py:method:: run_crest(path_to_complexes=[], path_to_output=[], conformer_search='off')
+
+      This function is designed to either run conformer search with xtb preopt. or just xtb optimization.
+      The subprocess.call is used to make a binary call from your ./bashrc file or any local path in your
+      $PATH system variable.
+
+      Files are stored in the users preferred place when you run the workflow in a modular way, or by design
+      the results are stored in your Workflow/CREST folder.
+
+
+
+
+   .. py:method:: calculate_descriptors()
+
+      This function uses the Descriptor class to calculate descriptors for xyz, CREST or log files. The output_type
+      is used to determine which descriptors are calculated. The extract_xyz_from_log is used to extract the xyz
+      coordinates from the log file. The printout is used to print the descriptors to the screen.
+
+      By default, self.path_to_workflow is used as the path for the files to be read in.
+      (so obelix/Workflow)
+
+      :param metal_adduct: pristine, nbd are fully supported, acetonitrile is WIP
+      :param output_type: xyz, crest or gaussian
+      :param extract_xyz_from_log: True or False (only used for descriptors from gaussian output)
+      :param printout: True or False (prints the descriptors to the screen)
+      :return: dataframe of descriptors, calculated and loaded in the Descriptor class
+
+
+
+   .. py:method:: run_workflow()
+
+
+.. py:data:: ligand_excel_file
+   :value: 'ligands_test.xlsx'
+
+

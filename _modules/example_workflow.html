@@ -1,0 +1,202 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>example_workflow &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            obelix
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">example_workflow</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for example_workflow</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">obelix.run_workflow</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">chemspax</span>
+
+<div class="viewcode-block" id="ligand_excel_file">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.ligand_excel_file">[docs]</a>
+<span class="n">ligand_excel_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;test_mace.xlsx&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ligand_df">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.ligand_df">[docs]</a>
+<span class="n">ligand_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">ligand_excel_file</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ligand_name">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.ligand_name">[docs]</a>
+<span class="n">ligand_name</span> <span class="o">=</span> <span class="n">ligand_df</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ligand_smiles">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.ligand_smiles">[docs]</a>
+<span class="n">ligand_smiles</span> <span class="o">=</span> <span class="n">ligand_df</span><span class="p">[</span><span class="s1">&#39;smiles&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="auxiliary_ligands">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.auxiliary_ligands">[docs]</a>
+<span class="n">auxiliary_ligands</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CC#[N:1]&#39;</span><span class="p">,</span> <span class="s1">&#39;CC#[N:1]&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="substrate">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.substrate">[docs]</a>
+<span class="n">substrate</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CC#[N:1]&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="geom">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.geom">[docs]</a>
+<span class="n">geom</span> <span class="o">=</span> <span class="s1">&#39;SP&#39;</span></div>
+
+<div class="viewcode-block" id="central_atom">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.central_atom">[docs]</a>
+<span class="n">central_atom</span> <span class="o">=</span> <span class="s1">&#39;[Rh+]&#39;</span></div>
+
+
+
+
+<span class="c1"># MACE input </span>
+<div class="viewcode-block" id="mace_input">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.mace_input">[docs]</a>
+<span class="n">mace_input</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bidentate_ligands&#39;</span><span class="p">:</span> <span class="n">ligand_smiles</span><span class="p">,</span> 
+                <span class="s1">&#39;auxiliary_ligands&#39;</span><span class="p">:</span> <span class="n">auxiliary_ligands</span><span class="p">,</span> 
+                <span class="s1">&#39;names_of_xyz&#39;</span><span class="p">:</span> <span class="n">ligand_name</span><span class="p">,</span> 
+                <span class="s1">&#39;central_atom&#39;</span><span class="p">:</span> <span class="n">central_atom</span><span class="p">,</span> 
+                <span class="s1">&#39;geom&#39;</span><span class="p">:</span> <span class="n">geom</span><span class="p">,</span> 
+                <span class="s1">&#39;substrate&#39;</span><span class="p">:</span> <span class="n">substrate</span><span class="p">}</span></div>
+
+
+<span class="c1"># The data files packaged along withchemspax can be accessed by pointing to the path where chemspax is installed in the local mahcine</span>
+<div class="viewcode-block" id="chemspax_directory">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.chemspax_directory">[docs]</a>
+<span class="n">chemspax_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">chemspax</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="path_to_substituents">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.path_to_substituents">[docs]</a>
+<span class="n">path_to_substituents</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chemspax_directory</span><span class="p">,</span> <span class="s2">&quot;substituents_xyz&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="path_to_database">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.path_to_database">[docs]</a>
+<span class="n">path_to_database</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_to_substituents</span><span class="p">,</span> <span class="s2">&quot;manually_generated&quot;</span><span class="p">,</span> <span class="s2">&quot;central_atom_centroid_database.csv&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="substituent_df">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.substituent_df">[docs]</a>
+<span class="n">substituent_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;test_chemspax.xlsx&#39;</span><span class="p">),</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">&#39;Sheet1&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="substituent_list">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.substituent_list">[docs]</a>
+<span class="n">substituent_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">substituent_df</span><span class="p">[[</span><span class="s1">&#39;R1&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;R3&#39;</span><span class="p">,</span> <span class="s1">&#39;R4&#39;</span><span class="p">]])</span></div>
+
+<span class="c1"># print(substituent_list)</span>
+<div class="viewcode-block" id="names">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.names">[docs]</a>
+<span class="n">names</span> <span class="o">=</span> <span class="n">substituent_df</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="func_list">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.func_list">[docs]</a>
+<span class="n">func_list</span> <span class="o">=</span> <span class="n">substituent_df</span><span class="p">[</span><span class="s1">&#39;Functionalization&#39;</span><span class="p">]</span></div>
+
+<span class="c1"># print(skeleton_list)</span>
+<span class="c1"># path_to_hand_drawn_skeletons = os.path.join(os.getcwd(), &quot;skeletons&quot;)</span>
+<span class="c1"># path_to_output = os.path.join(os.getcwd(), &quot;complexes&quot;)</span>
+
+<div class="viewcode-block" id="chemspax_input">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.chemspax_input">[docs]</a>
+<span class="n">chemspax_input</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;substituent_list&#39;</span> <span class="p">:</span> <span class="n">substituent_list</span><span class="p">}</span></div>
+
+                <span class="c1"># &#39;path_to_database&#39; : path_to_database,</span>
+                <span class="c1"># &#39;path_to_substituents&#39; : path_to_substituents}</span>
+
+<div class="viewcode-block" id="workflow">
+<a class="viewcode-back" href="../autoapi/example_workflow/index.html#example_workflow.workflow">[docs]</a>
+<span class="n">workflow</span> <span class="o">=</span> <span class="n">Workflow</span><span class="p">(</span><span class="n">mace_input</span> <span class="o">=</span> <span class="n">mace_input</span><span class="p">,</span> <span class="n">chemspax_input</span><span class="o">=</span><span class="n">chemspax_input</span><span class="p">,</span> <span class="n">path_to_workflow</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;/wf_test5&#39;</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="s1">&#39;BD&#39;</span><span class="p">)</span></div>
+
+<span class="n">workflow</span><span class="o">.</span><span class="n">prepare_folder_structure</span><span class="p">()</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">run_mace</span><span class="p">()</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">run_chemspax</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="n">functionalization_list</span><span class="o">=</span><span class="n">func_list</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
