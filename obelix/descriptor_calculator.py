@@ -26,14 +26,15 @@ class Descriptors:
     Class for calculating Morfeus and DFT descriptors. Works for Gaussian log files, CREST folders and xyz files.
 
     """
-    def __init__(self, central_atom, path_to_workflow, output_type):
+    def __init__(self, central_atom, path_to_workflow = None, output_type = None, ce = None):
         self.central_atom = central_atom
         self.path_to_workflow = path_to_workflow
         self.supported_output_types = ['xyz', 'crest', 'gaussian']
-        if output_type not in self.supported_output_types:
-            raise ValueError(f'Output type {output_type} not supported. Please choose from {self.supported_output_types}.')
+        #if output_type not in self.supported_output_types:
+            #raise ValueError(f'Output type {output_type} not supported. Please choose from {self.supported_output_types}.')
         self.output_type = output_type
         self.descriptor_df = None
+        self.ce = ce
 
     @staticmethod
     def _find_bidentate_ligand(elements, coordinates):
@@ -227,12 +228,13 @@ class Descriptors:
             raise ValueError(f'Output type {new_output_type} not supported. Please choose from {self.supported_output_types}.')
         self.output_type = new_output_type
 
-    def _calculate_steric_electronic_desc_morfeus(self, geom_type, solvent, dictionary, elements, coordinates, filename, metal_adduct='pristine', plot_steric_map=False):
+    def _calculate_steric_electronic_desc_morfeus(self, solvent, dictionary, elements, coordinates, filename, metal_adduct='pristine', plot_steric_map=False, bidentate_min_donor_idx=None, bidentate_max_donor_idx=None):
         """
         Calculate all steric and electronic descriptors that can be calculated using Morfeus. For NBD ligands,
         there are additional descriptors that can be calculated.
 
-        :param geom_type:
+        :param bidentate_min_donor_idx: if user does not want to use xTB for this, they can give the max/min donor idx
+        :param bidentate_max_donor_idx: if user does not want to use xTB for this, they can give the max/min donor idx
         :param solvent:
         :param dictionary:
         :param elements:
@@ -252,7 +254,6 @@ class Descriptors:
         # metal center idx is always at end of molecular_graph output, so we search for its coordinates to find the index
         bidentate_ligand_atoms_metal_idx = np.where(np.array(bidentate_ligand_atoms_coordinates) == coordinates[bidentate_ligand_atoms[-1]])[0][0] + 1
         # print(bidentate_ligand_atoms_elements[bidentate_ligand_atoms_metal_idx - 1])
-
         # first index is the metal, second index is the bidentate ligand 1, third index is the bidentate ligand 2
         # in the full complex
         # morfeus indices start at 1, so add 1 to the indices
@@ -273,14 +274,18 @@ class Descriptors:
         charge_bidentate_1 = atomic_charges[bidentate_1_idx]
         charge_bidentate_2 = atomic_charges[bidentate_2_idx]
 
-        if charge_bidentate_1 > charge_bidentate_2:
-            # this means that bidentate 1 is max donor (charge is less negative, so stronger donor)
-            bidentate_max_donor_idx = bidentate_1_idx
-            bidentate_min_donor_idx = bidentate_2_idx
-        else:
-            # this means that bidentate 2 is max donor
-            bidentate_max_donor_idx = bidentate_2_idx
-            bidentate_min_donor_idx = bidentate_1_idx
+        if bidentate_max_donor_idx is None or bidentate_min_donor_idx is None:
+            # if the user has not given the max/min donor indices, we determine them based on the xTB charges
+            # the user can give the indices for example based on a structure template where the indices stay the same
+            # or on DFT charges etc.
+            if charge_bidentate_1 > charge_bidentate_2:
+                # this means that bidentate 1 is max donor (charge is less negative, so stronger donor)
+                bidentate_max_donor_idx = bidentate_1_idx
+                bidentate_min_donor_idx = bidentate_2_idx
+            else:
+                # this means that bidentate 2 is max donor
+                bidentate_max_donor_idx = bidentate_2_idx
+                bidentate_min_donor_idx = bidentate_1_idx
 
         bidentate_ligand_atoms_max_donor_idx = np.where(np.array(bidentate_ligand_atoms_coordinates) == coordinates[bidentate_max_donor_idx - 1])[0][0] + 1
         bidentate_ligand_atoms_min_donor_idx = np.where(np.array(bidentate_ligand_atoms_coordinates) == coordinates[bidentate_min_donor_idx - 1])[0][0] + 1
@@ -357,11 +362,13 @@ class Descriptors:
                 # cone_angle_correct = False  # ToDo: fix nbd_complex.find_nbd_openbabel() such that we can remove NBD for cone angle calculation
 
         # for the quadrant analysis, we only use the bidentate ligand atoms and metal center
+
         z_axis_atom_index = [bidentate_ligand_atoms_min_donor_idx, bidentate_ligand_atoms_max_donor_idx]
         xz_plane_atom_indices = [bidentate_ligand_atoms_max_donor_idx]
         dictionary.update(
             self._buried_volume_quadrant_analysis(filename, bidentate_ligand_atoms_elements, bidentate_ligand_atoms_coordinates, dictionary, bidentate_ligand_atoms_metal_idx,
                                                   z_axis_atom_index, xz_plane_atom_indices, excluded_atoms, plot_steric_map))
+
 
         # calculate steric descriptors
         # for the bite angle we can use the whole complex
@@ -423,8 +430,13 @@ class Descriptors:
         #     dictionary["cone_angle"] = None
 
         # calculate distances between metal and donors, units: angstrom
-        dictionary[f"distance_{self.central_atom}_max_donor_{self.output_type.lower()}"] = calculate_distance(coordinates[metal_idx - 1], coordinates[bidentate_max_donor_idx - 1])
-        dictionary[f"distance_{self.central_atom}_min_donor_{self.output_type.lower()}"] = calculate_distance(coordinates[metal_idx - 1], coordinates[bidentate_min_donor_idx - 1])
+
+        if self.output_type is None:
+            dictionary[f"distance_{self.central_atom}_max_donor_"] = calculate_distance(coordinates[metal_idx - 1], coordinates[bidentate_max_donor_idx - 1])
+            dictionary[f"distance_{self.central_atom}_min_donor_"] = calculate_distance(coordinates[metal_idx - 1], coordinates[bidentate_min_donor_idx - 1])
+        else:
+            dictionary[f"distance_{self.central_atom}_max_donor_{self.output_type.lower()}"] = calculate_distance(coordinates[metal_idx - 1], coordinates[bidentate_max_donor_idx - 1])
+            dictionary[f"distance_{self.central_atom}_min_donor_{self.output_type.lower()}"] = calculate_distance(coordinates[metal_idx - 1], coordinates[bidentate_min_donor_idx - 1])
 
         # calculate buried volume descriptors on only the bidentate ligand atoms
         bv_metal_center = BuriedVolume(bidentate_ligand_atoms_elements, bidentate_ligand_atoms_coordinates, bidentate_ligand_atoms_metal_idx, radius=3.5, excluded_atoms=excluded_atoms).fraction_buried_volume
@@ -637,12 +649,11 @@ class Descriptors:
 
         return dictionary
 
-    def calculate_morfeus_descriptors(self, geom_type, solvent=None, printout=False, metal_adduct='pristine', plot_steric_map=False):
+    def calculate_morfeus_descriptors(self, solvent=None, printout=False, metal_adduct='pristine', plot_steric_map=False):
         """
         Function that creates the dictionary for descriptor calculation using Morfeus and performs the right actions
         based on the output type. For CREST ensembles, the descriptors are boltzmann weighted and averaged.
 
-        :param geom_type:
         :param solvent:
         :param printout:
         :param metal_adduct:
@@ -664,7 +675,7 @@ class Descriptors:
 
                 elements, coordinates = read_xyz(metal_ligand_complex)
                 try:
-                    properties, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx = self._calculate_steric_electronic_desc_morfeus(geom_type=geom_type, solvent=solvent, dictionary=properties, elements=elements, coordinates=coordinates, filename=filename, metal_adduct=metal_adduct, plot_steric_map=plot_steric_map)
+                    properties, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx = self._calculate_steric_electronic_desc_morfeus(solvent=solvent, dictionary=properties, elements=elements, coordinates=coordinates, filename=filename, metal_adduct=metal_adduct, plot_steric_map=plot_steric_map)
                 except:
                     # if something goes wrong with the molecular graph it usually means that the geometry is wrong
                     print('Error calculating Morfeus descriptors for: ', filename)
@@ -687,101 +698,117 @@ class Descriptors:
             dictionary_for_conformer_properties = {}
             for complex in tqdm(complexes_to_calc_descriptors):
                 conformer_properties = {}
-                ce = None
+                #ce = None
                 filename = os.path.basename(os.path.normpath(complex))
                 print('\nCalculating descriptors for: ', filename, '...')
                 try:
-                    ce = ConformerEnsemble.from_crest(complex)
+                    self.ce = ConformerEnsemble.from_crest(complex)
                 except Exception as e:
                     print("Descriptor calculation failed for this complex:", complex)
                     print(e)
                     conformer_properties['filename_tud'] = filename
                     continue
+                self.calculate_morfeus_descriptors_ce(metal_adduct = metal_adduct, ce_name=filename)
+            #     if ce is not None:
+            #         # ce.generate_mol()
+            #         ce.prune_energy()
+            #         ce.sort()
+            #         conformer_properties['filename_tud'] = filename
+            #         print(f'Number of conformers in ensemble for {filename}: {len(ce)}')
+            #         # define indexing columns that need to be excluded from boltzmann averaging
+            #         columns_to_exclude = [f"index_{self.central_atom}", "index_donor_max", "index_donor_min",
+            #                               f"element_{self.central_atom}", "element_donor_max",
+            #                               "element_donor_min"]
+            #         if metal_adduct.lower() == 'nbd':  # in this case there are some additional columns that need to be skipped
+            #             columns_to_exclude += ['distance_pi_bond_1_element_1', 'distance_pi_bond_1_element_2',
+            #                                    'distance_pi_bond_1_element_1_idx', 'distance_pi_bond_1_element_2_idx',
+            #                                    'distance_pi_bond_2_element_1', 'distance_pi_bond_2_element_2',
+            #                                    'distance_pi_bond_2_element_1_idx', 'distance_pi_bond_2_element_2_idx',
+            #                                    'dihedral_angle_1_element_1', 'dihedral_angle_1_element_2',
+            #                                    'dihedral_angle_1_element_3', 'dihedral_angle_1_element_4',
+            #                                    'dihedral_angle_1_index_1', 'dihedral_angle_1_index_2',
+            #                                    'dihedral_angle_1_index_3', 'dihedral_angle_1_index_4',
+            #                                    'dihedral_angle_2_element_1', 'dihedral_angle_2_element_2',
+            #                                    'dihedral_angle_2_element_3', 'dihedral_angle_2_element_4',
+            #                                    'dihedral_angle_2_index_1', 'dihedral_angle_2_index_2',
+            #                                    'dihedral_angle_2_index_3', 'dihedral_angle_2_index_4']
 
-                if ce is not None:
-                    # ce.generate_mol()
-                    ce.prune_energy()
-                    ce.sort()
-                    conformer_properties['filename_tud'] = filename
-                    print(f'Number of conformers in ensemble for {filename}: {len(ce)}')
-                    # define indexing columns that need to be excluded from boltzmann averaging
-                    columns_to_exclude = [f"index_{self.central_atom}", "index_donor_max", "index_donor_min",
-                                          f"element_{self.central_atom}", "element_donor_max",
-                                          "element_donor_min"]
-                    if metal_adduct.lower() == 'nbd':  # in this case there are some additional columns that need to be skipped
-                        columns_to_exclude += ['distance_pi_bond_1_element_1', 'distance_pi_bond_1_element_2',
-                                               'distance_pi_bond_1_element_1_idx', 'distance_pi_bond_1_element_2_idx',
-                                               'distance_pi_bond_2_element_1', 'distance_pi_bond_2_element_2',
-                                               'distance_pi_bond_2_element_1_idx', 'distance_pi_bond_2_element_2_idx',
-                                               'dihedral_angle_1_element_1', 'dihedral_angle_1_element_2',
-                                               'dihedral_angle_1_element_3', 'dihedral_angle_1_element_4',
-                                               'dihedral_angle_1_index_1', 'dihedral_angle_1_index_2',
-                                               'dihedral_angle_1_index_3', 'dihedral_angle_1_index_4',
-                                               'dihedral_angle_2_element_1', 'dihedral_angle_2_element_2',
-                                               'dihedral_angle_2_element_3', 'dihedral_angle_2_element_4',
-                                               'dihedral_angle_2_index_1', 'dihedral_angle_2_index_2',
-                                               'dihedral_angle_2_index_3', 'dihedral_angle_2_index_4']
+            #         # initialize list which will contain conformers to be removed if indexing properties are not
+            #         # the same as the first conformer
+            #         # remove_conformer_list = []
 
-                    # initialize list which will contain conformers to be removed if indexing properties are not
-                    # the same as the first conformer
-                    remove_conformer_list = []
+            #         try:
+            #             for conformer_idx, conformer in enumerate(ce.conformers):
+            #                 elements, coordinates = ce.elements, conformer.coordinates
+            #                 conformer.properties, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx = self._calculate_steric_electronic_desc_morfeus(solvent=solvent, dictionary=conformer.properties, elements=elements, coordinates=coordinates, filename=filename, metal_adduct=metal_adduct, plot_steric_map=plot_steric_map)
+            #                 # these are indexing properties so we don't want them to be boltzmann averaged
 
-                    try:
-                        for conformer_idx, conformer in enumerate(ce.conformers):
-                            elements, coordinates = ce.elements, conformer.coordinates
-                            conformer.properties, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx = self._calculate_steric_electronic_desc_morfeus(geom_type=geom_type, solvent=solvent, dictionary=conformer.properties, elements=elements, coordinates=coordinates, filename=filename, metal_adduct=metal_adduct, plot_steric_map=plot_steric_map)
-                            # these are indexing properties so we don't want them to be boltzmann averaged
+            #                 # check if indexing column is the same as the first conformer, if not add conformer to
+            #                 # remove_conformer_list to be removed from the conformer ensemble later
+            #                 bidentate_min_donor_idx_same_across_all_conformers = True
+            #                 bidentate_max_donor_idx_same_across_all_conformers = True
+            #                 for key in [k for k in ce.get_properties().keys() if k in columns_to_exclude]:
+            #                     if conformer.properties[key] != ce.conformers[0].properties[key]:
+            #                         print("\n"
+            #                             f"BE AWARE: Indexing property {key} is not the same across all conformers for conformer {conformer_idx}.")
+            #                             # f"This conformer will be deleted for {os.path.basename(os.path.normpath(complex))}.")
+            #                         # ToDo: if this is the case, rerun the conformer's properties with the min/max donor
+            #                         # ToDo: indexing of the first conformer
+            #                         if key == 'index_donor_min':
+            #                             bidentate_min_donor_idx_same_across_all_conformers = False
+            #                         elif key == 'index_donor_max':
+            #                             bidentate_max_donor_idx_same_across_all_conformers = False
+            #                 if not bidentate_min_donor_idx_same_across_all_conformers or not bidentate_max_donor_idx_same_across_all_conformers:
+            #                     print(f"BE AWARE: Min and/or max donor indexing properties are not the same across all conformers for {os.path.basename(os.path.normpath(complex))}.")
+            #                     print("The min and/or max donor indexing properties will be recalculated for this conformer.")
+            #                     print("Using the indexing properties of the first conformer...")
+            #                     first_conformer_bidentate_min_donor_idx = ce.conformers[0].properties['index_donor_min']
+            #                     first_conformer_bidentate_max_donor_idx = ce.conformers[0].properties['index_donor_max']
+            #                     conformer.properties, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx = self._calculate_steric_electronic_desc_morfeus(solvent=solvent, dictionary=conformer.properties, elements=elements, coordinates=coordinates, filename=filename, metal_adduct=metal_adduct, plot_steric_map=plot_steric_map, bidentate_max_donor_idx=first_conformer_bidentate_max_donor_idx, bidentate_min_donor_idx=first_conformer_bidentate_min_donor_idx)
 
-                            # check if indexing column is the same as the first conformer, if not add conformer to
-                            # remove_conformer_list to be removed from the conformer ensemble later
-                            for key in [k for k in ce.get_properties().keys() if k in columns_to_exclude]:
-                                if conformer.properties[key] != ce.conformers[0].properties[key]:
-                                    print("\n"
-                                        f"BE AWARE: Indexing property {key} is not the same across all conformers for conformer {conformer_idx}. "
-                                        f"This conformer will be deleted for {os.path.basename(os.path.normpath(complex))}.")
-                                    remove_conformer_list.append(conformer_idx)
 
-                        # get unique list of conformers to remove and delete them from the conformer ensemble
-                        remove_conformer_list = list(set(remove_conformer_list))
-                        for remove_conformer_idx in reversed(remove_conformer_list):
-                            del ce.conformers[remove_conformer_idx]
-                        print(f"\nNumber of conformers in ensemble for {filename} after removing conformers with different indexing properties: {len(ce)}")
+            #             #             remove_conformer_list.append(conformer_idx)
+            #             #
+            #             # # get unique list of conformers to remove and delete them from the conformer ensemble
+            #             # remove_conformer_list = list(set(remove_conformer_list))
+            #             # for remove_conformer_idx in reversed(remove_conformer_list):
+            #             #     del ce.conformers[remove_conformer_idx]
+            #             # print(f"\nNumber of conformers in ensemble for {filename} after removing conformers with different indexing properties: {len(ce)}")
 
-                        # boltzmann averaging
-                        for key in [k for k in ce.get_properties().keys() if k not in columns_to_exclude]:
-                            conformer_properties[f"{key}_boltzmann_average"] = ce.boltzmann_statistic(key)
-                            conformer_properties[f"{key}_boltzmann_std"] = ce.boltzmann_statistic(key,
-                                                                                                  statistic='std')
-                            conformer_properties[f"{key}_boltzmann_variance"] = ce.boltzmann_statistic(key,
-                                                                                                       statistic='var')
-                            conformer_properties[f"{key}_Emin_conformer"] = ce.get_properties()[key][0]
-                    except Exception as e:
-                        # if something goes wrong with the molecular graph it usually means that the geometry is wrong
-                        print('Error calculating Morfeus descriptors or Boltzmann averaging for: ', filename)
-                        print(e)
-                        print('Make sure to check the geometry')
-                    # all descriptors calculated, now we can write the boltzman statistics to the dictionary
-                dictionary_for_conformer_properties[os.path.basename(os.path.normpath(complex))] = conformer_properties
+            #             # boltzmann averaging
+            #             for key in [k for k in ce.get_properties().keys() if k not in columns_to_exclude]:
+            #                 conformer_properties[f"{key}_boltzmann_average"] = ce.boltzmann_statistic(key)
+            #                 conformer_properties[f"{key}_boltzmann_std"] = ce.boltzmann_statistic(key,
+            #                                                                                       statistic='std')
+            #                 conformer_properties[f"{key}_boltzmann_variance"] = ce.boltzmann_statistic(key,
+            #                                                                                            statistic='var')
+            #                 conformer_properties[f"{key}_Emin_conformer"] = ce.get_properties()[key][0]
+            #         except Exception as e:
+            #             # if something goes wrong with the molecular graph it usually means that the geometry is wrong
+            #             print('Error calculating Morfeus descriptors or Boltzmann averaging for: ', filename)
+            #             print(e)
+            #             print('Make sure to check the geometry')
+            #         # all descriptors calculated, now we can write the boltzman statistics to the dictionary
+            #     dictionary_for_conformer_properties[os.path.basename(os.path.normpath(complex))] = conformer_properties
 
-            new_descriptor_df = dataframe_from_dictionary(dictionary_for_conformer_properties)
-            if printout:
-                print(new_descriptor_df.to_markdown())
+            # new_descriptor_df = dataframe_from_dictionary(dictionary_for_conformer_properties)
+            # if printout:
+            #     print(new_descriptor_df.to_markdown())
 
-            if self.descriptor_df is None:
-                self.descriptor_df = new_descriptor_df
-            else:
-                self.descriptor_df = self._merge_descriptor_dfs(self.descriptor_df, new_descriptor_df)
+            # if self.descriptor_df is None:
+            #     self.descriptor_df = new_descriptor_df
+            # else:
+            #     self.descriptor_df = self._merge_descriptor_dfs(self.descriptor_df, new_descriptor_df)
 
         else:
             raise ValueError(f'Output type {self.output_type()} not supported. Please choose from {self.supported_output_types}.')
 
-    def calculate_dft_descriptors_from_log(self, geom_type, solvent=None, extract_xyz_from_log=False, printout=False, metal_adduct='pristine', plot_steric_map=False):
+    def calculate_dft_descriptors_from_log(self, solvent=None, extract_xyz_from_log=False, printout=False, metal_adduct='pristine', plot_steric_map=False):
         """
         Function that creates the dictionary and descriptor dataframe for the DFT descriptors. These descriptors are calculated
         from the log files of the DFT calculations. The log files are parsed using the cclib package. The descriptors are
         calculated using either the Morfeus package or extracted from the log files.
 
-        :param geom_type:
         :param solvent:
         :param extract_xyz_from_log:
         :param printout:
@@ -819,7 +846,7 @@ class Descriptors:
             # ToDo: initialize DFTExtractor class here and allow assigning min/max donor from the DFT data
 
             try:
-                properties, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx = self._calculate_steric_electronic_desc_morfeus(geom_type=geom_type, solvent=solvent, dictionary=properties, elements=elements, coordinates=coordinates, filename=filename, metal_adduct=metal_adduct, plot_steric_map=plot_steric_map)
+                properties, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx = self._calculate_steric_electronic_desc_morfeus(solvent=solvent, dictionary=properties, elements=elements, coordinates=coordinates, filename=filename, metal_adduct=metal_adduct, plot_steric_map=plot_steric_map)
             except Exception as e:
                 print('Error calculating Morfeus descriptors for: ', filename)
                 print(e)
@@ -860,22 +887,140 @@ class Descriptors:
         else:
             self.descriptor_df = self._merge_descriptor_dfs(self.descriptor_df, new_descriptor_df)
 
+    def calculate_morfeus_descriptors_ce(self, metal_adduct='pristine', filename = 'filename1', solvent=None, plot_steric_map=False,printout = False, ce_name = None):
+        if self.ce is not None:
+            self.ce.sort()
+            dictionary_for_conformer_properties = {}
+            conformer_properties = {}
+            print(f'Number of conformers in ensemble for: {len(self.ce)}')
+            # define indexing columns that need to be excluded from boltzmann averaging
+            columns_to_exclude = [f"index_{self.central_atom}", "index_donor_max", "index_donor_min",
+                                    f"element_{self.central_atom}", "element_donor_max",
+                                    "element_donor_min"]
+            if metal_adduct.lower() == 'nbd':  # in this case there are some additional columns that need to be skipped
+                columns_to_exclude += ['distance_pi_bond_1_element_1', 'distance_pi_bond_1_element_2',
+                                        'distance_pi_bond_1_element_1_idx', 'distance_pi_bond_1_element_2_idx',
+                                        'distance_pi_bond_2_element_1', 'distance_pi_bond_2_element_2',
+                                        'distance_pi_bond_2_element_1_idx', 'distance_pi_bond_2_element_2_idx',
+                                        'dihedral_angle_1_element_1', 'dihedral_angle_1_element_2',
+                                        'dihedral_angle_1_element_3', 'dihedral_angle_1_element_4',
+                                        'dihedral_angle_1_index_1', 'dihedral_angle_1_index_2',
+                                        'dihedral_angle_1_index_3', 'dihedral_angle_1_index_4',
+                                        'dihedral_angle_2_element_1', 'dihedral_angle_2_element_2',
+                                        'dihedral_angle_2_element_3', 'dihedral_angle_2_element_4',
+                                        'dihedral_angle_2_index_1', 'dihedral_angle_2_index_2',
+                                        'dihedral_angle_2_index_3', 'dihedral_angle_2_index_4']
+
+            # initialize list which will contain conformers to be removed if indexing properties are not
+            # the same as the first conformer
+            # remove_conformer_list = []
+
+            big_df = None
+            try:
+                for conformer_idx, conformer in tqdm(enumerate(self.ce.conformers), total=len(self.ce.conformers)):
+                    elements, coordinates = self.ce.elements, conformer.coordinates
+                    conformer.properties, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx = self._calculate_steric_electronic_desc_morfeus(solvent=solvent, dictionary=conformer.properties, elements=elements, coordinates=coordinates, filename=filename, metal_adduct=metal_adduct, plot_steric_map=plot_steric_map)
+     
+
+                    #conformer_df = np.transpose(dataframe_from_dictionary(conformer_properties))
+                    #conformer_df.insert(0, f'Conformer index in {ce_name}', f" Conformer {conformer_idx + 1}")
+                    #if big_df is None:
+                        #big_df = conformer_df
+                        #print(big_df)
+                    #else:
+                        #big_df = pd.concat([big_df, conformer_df])
+                    #print(big_df)
+                    
+                    # these are indexing properties so we don't want them to be boltzmann averaged
+
+                    # check if indexing column is the same as the first conformer, if not add conformer to
+                    # remove_conformer_list to be removed from the conformer ensemble later
+                    bidentate_min_donor_idx_same_across_all_conformers = True
+                    bidentate_max_donor_idx_same_across_all_conformers = True
+                    for key in [k for k in self.ce.get_properties().keys() if k in columns_to_exclude]:
+                        if conformer.properties[key] != self.ce.conformers[0].properties[key]:
+                            print("\n"
+                                f"BE AWARE: Indexing property {key} is not the same across all conformers for conformer {conformer_idx}.")
+                                # f"This conformer will be deleted for {os.path.basename(os.path.normpath(complex))}.")
+                            # ToDo: if this is the case, rerun the conformer's properties with the min/max donor
+                            # ToDo: indexing of the first conformer
+                            if key == 'index_donor_min':
+                                bidentate_min_donor_idx_same_across_all_conformers = False
+                            elif key == 'index_donor_max':
+                                bidentate_max_donor_idx_same_across_all_conformers = False
+                    if not bidentate_min_donor_idx_same_across_all_conformers or not bidentate_max_donor_idx_same_across_all_conformers:
+                        #print(f"BE AWARE: Min and/or max donor indexing properties are not the same across all conformers for {os.path.basename(os.path.normpath(complex))}.")
+                        print("The min and/or max donor indexing properties will be recalculated for this conformer.")
+                        print("Using the indexing properties of the first conformer...")
+                        first_conformer_bidentate_min_donor_idx = self.ce.conformers[0].properties['index_donor_min']
+                        first_conformer_bidentate_max_donor_idx = self.ce.conformers[0].properties['index_donor_max']
+                        conformer.properties, metal_idx, bidentate_max_donor_idx, bidentate_min_donor_idx = self._calculate_steric_electronic_desc_morfeus(solvent=solvent, dictionary=conformer.properties, elements=elements, coordinates=coordinates, filename=filename, metal_adduct=metal_adduct, plot_steric_map=plot_steric_map, bidentate_max_donor_idx=first_conformer_bidentate_max_donor_idx, bidentate_min_donor_idx=first_conformer_bidentate_min_donor_idx)
+
+                    conformer_df = np.transpose(dataframe_from_dictionary(conformer.properties))
+                    conformer_df.insert(0, f'Conformer index in {ce_name}', f" Conformer {conformer_idx + 1}")
+                    if big_df is None:
+                        big_df = conformer_df
+
+                    else:
+                        big_df = pd.concat([big_df, conformer_df])
+                    print(big_df)
+
+                #             remove_conformer_list.append(conformer_idx)
+                #
+                # # get unique list of conformers to remove and delete them from the conformer ensemble
+                # remove_conformer_list = list(set(remove_conformer_list))
+                # for remove_conformer_idx in reversed(remove_conformer_list):
+                #     del ce.conformers[remove_conformer_idx]
+                # print(f"\nNumber of conformers in ensemble for {filename} after removing conformers with different indexing properties: {len(ce)}")
+
+                # boltzmann averaging
+                for key in [k for k in self.ce.get_properties().keys() if k not in columns_to_exclude]:
+                    conformer_properties[f"{key}_boltzmann_average"] = self.ce.boltzmann_statistic(key)
+                    conformer_properties[f"{key}_boltzmann_std"] = self.ce.boltzmann_statistic(key,
+                                                                                            statistic='std')
+                    conformer_properties[f"{key}_boltzmann_variance"] = self.ce.boltzmann_statistic(key,
+                                                                                                statistic='var')
+                    conformer_properties[f"{key}_Emin_conformer"] = self.ce.get_properties()[key][0]
+            except Exception as e:
+                # if something goes wrong with the molecular graph it usually means that the geometry is wrong
+                #print('Error calculating Morfeus descriptors or Boltzmann averaging for: ', filename)
+                print(e)
+                print('Make sure to check the geometry')
+            # all descriptors calculated, now we can write the boltzman statistics to the dictionary
+                dictionary_for_conformer_properties[os.path.join(os.getcwd())] = conformer_properties
+                #dictionary_for_conformer_properties[os.path.basename(os.path.normpath(self.ce))] = conformer_properties
+
+            new_descriptor_df = dataframe_from_dictionary(dictionary_for_conformer_properties)
+            if printout:
+                print(new_descriptor_df.to_markdown())
+
+            if self.descriptor_df is None:
+                self.descriptor_df = new_descriptor_df
+            else:
+                self.descriptor_df = self._merge_descriptor_dfs(self.descriptor_df, new_descriptor_df)
+            self.descriptor_df = pd.concat([big_df, self.descriptor_df], ignore_index=True)
 
 if __name__ == "__main__":
     # example descriptor calculation for xyz files with NBD adduct in obelix/Workflow folder
-    descriptors = Descriptors(central_atom='Rh', path_to_workflow=os.path.join(os.getcwd(), 'Workflow'), output_type='xyz')
-    descriptors.calculate_morfeus_descriptors(geom_type='BD', solvent=None, printout=False, metal_adduct='nbd')
+    descriptors = Descriptors(central_atom='Rh', path_to_workflow=os.path.join(os.getcwd(), 'ezkell'), output_type='xyz')
+    descriptors.calculate_morfeus_descriptors(solvent=None, printout=False, metal_adduct='nbd')
     descriptors.descriptor_df.to_csv('descriptors.csv', index=False)
 
-    # the descriptors can also be calculated for 2 output types and merged into one dataframe as per example below
-    # conformer_descriptors = Descriptors(central_atom='Rh', path_to_workflow=os.path.join(os.getcwd(), 'Workflow'), output_type='crest')
-    # conformer_descriptors.calculate_morfeus_descriptors(geom_type='BD', solvent=None, printout=False, metal_adduct='pristine')
-    # conformer_descriptors.descriptor_df.to_csv('conformer_descriptors.csv', index=False)
-    # conformer_descriptors.set_output_type('xyz')
-    # conformer_descriptors.calculate_morfeus_descriptors(geom_type='BD', solvent=None, printout=False, metal_adduct='pristine')
-    # conformer_descriptors.descriptor_df.to_csv('conformer_descriptors', index=False)
+    #the descriptors can also be calculated for 2 output types and merged into one dataframe as per example below
+    conformer_descriptors = Descriptors(central_atom='Rh', path_to_workflow=os.path.join(os.getcwd(), 'ezkell'), output_type='crest')
+    conformer_descriptors.calculate_morfeus_descriptors(solvent=None, printout=False, metal_adduct='nbd')
+    conformer_descriptors.descriptor_df.to_csv('conformer_descriptors.csv', index=False)
+    conformer_descriptors.set_output_type('xyz')
+    conformer_descriptors.calculate_morfeus_descriptors(solvent=None, printout=False, metal_adduct='pristine')
+    conformer_descriptors.descriptor_df.to_csv('conformer_descriptors', index=False)
 
-    # example descriptor calculation for log files with NBD adduct
-    dft_descriptors = Descriptors(central_atom='Rh', path_to_workflow=os.path.join(os.getcwd(), 'Workflow'), output_type='gaussian')
-    dft_descriptors.calculate_dft_descriptors_from_log(geom_type='BD', solvent=None, extract_xyz_from_log=True, printout=False, metal_adduct='nbd', plot_steric_map=False)
-    dft_descriptors.descriptor_df.to_csv('DFT_descriptors.csv', index=False)
+
+
+    # import pickle
+    # with open ("conformer_ensemble_dict_np.pkl", "rb") as f:
+    #     ensemble_dict = pickle.load(f)
+    # # ce1 = ensemble_dict['ceL1']
+    # # descriptors = Descriptors(central_atom='Rh', ce = ce1)
+    # # descriptors.calculate_morfeus_descriptors_ce(metal_adduct= 'nbd', ce_name = "ceL1")
+    # # file_path = os.path.join("ce_descriptors", "ceL1_descriptors.csv")
+    # # descriptors.descriptor_df.to_csv(file_path, index=False)
