@@ -243,7 +243,7 @@ def molecular_graph(elements, coordinates, extract_ligand=False, path_to_workflo
     if str(elements[0]).isdigit():
         elements = list(elements)
         for elem_id, element in enumerate(elements):    
-            elements[elem_id] = periodic_table[element]
+            elements[elem_id] = periodic_table[element-1]
         elements = np.array(elements)
     
     ### Call to the MolGraph() functionality 
