@@ -1,0 +1,17 @@
+obelix.tools
+============
+
+.. py:module:: obelix.tools
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/obelix/tools/find_bidentate_atoms/index
+   /autoapi/obelix/tools/mace_substrate_remover/index
+   /autoapi/obelix/tools/utilities/index
+
+

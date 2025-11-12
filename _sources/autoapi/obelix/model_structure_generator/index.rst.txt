@@ -1,0 +1,65 @@
+obelix.model_structure_generator
+================================
+
+.. py:module:: obelix.model_structure_generator
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   obelix.model_structure_generator.dataset_name
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   obelix.model_structure_generator.MetalLigandComplex
+
+
+Module Contents
+---------------
+
+.. py:class:: MetalLigandComplex(ligand_dataframe, substrate, central_atom)
+
+   .. py:attribute:: ligand_df
+
+
+   .. py:attribute:: substrate
+
+
+   .. py:attribute:: central_atom
+
+
+   .. py:method:: make_dir(folder_name)
+      :staticmethod:
+
+
+
+   .. py:method:: transform_smiles_to_mace_input(list_of_ligands)
+      :staticmethod:
+
+
+
+   .. py:method:: create_complex_mace(identifier_column, ligand_smiles_column, auxillary_ligands, CA, geom, output_file_identifier)
+
+
+   .. py:method:: create_octahedral_structures(identifier_column, ligand_smiles_column)
+
+
+   .. py:method:: create_octahedral_structures_without_substrate(identifier_column, ligand_smiles_column)
+
+
+   .. py:method:: create_square_planar_structures_without_substrate(identifier_column, ligand_smiles_column)
+
+
+   .. py:method:: create_square_planar_structures(identifier_column, ligand_smiles_column)
+
+
+.. py:data:: dataset_name
+   :value: 'catalyst_set.xlsx'
+
+

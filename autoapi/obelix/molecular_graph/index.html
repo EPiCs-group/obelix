@@ -1,0 +1,300 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>obelix.molecular_graph &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="obelix.run_workflow" href="../run_workflow/index.html" />
+    <link rel="prev" title="obelix.model_structure_generator" href="../model_structure_generator/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            obelix
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">obelix</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../descriptor_calculator/index.html">obelix.descriptor_calculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../dft_extraction/index.html">obelix.dft_extraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../free_ligand/index.html">obelix.free_ligand</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../model_structure_generator/index.html">obelix.model_structure_generator</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">obelix.molecular_graph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../run_workflow/index.html">obelix.run_workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../tools/index.html">obelix.tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../example_workflow/index.html">example_workflow</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">obelix</a></li>
+      <li class="breadcrumb-item active">obelix.molecular_graph</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/obelix/molecular_graph/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-obelix.molecular_graph">
+<span id="obelix-molecular-graph"></span><h1>obelix.molecular_graph<a class="headerlink" href="#module-obelix.molecular_graph" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="obelix.molecular_graph.atomic_radii"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atomic_radii</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id0" title="obelix.molecular_graph.atomic_radii"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atomic_radii</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#obelix.molecular_graph.path_to_workflow" title="obelix.molecular_graph.path_to_workflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path_to_workflow</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#obelix.molecular_graph.MolGraph" title="obelix.molecular_graph.MolGraph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MolGraph</span></code></a></p></td>
+<td><p>This is a molecular graph class, containing several functionalities:</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#obelix.molecular_graph.bfs" title="obelix.molecular_graph.bfs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfs</span></code></a>(visited, graph, node)</p></td>
+<td><p>This function is a classic breadth-first traversal algorithm. It is applied to find all the subgraphs</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#obelix.molecular_graph.extract_ligand_and_write_xyz" title="obelix.molecular_graph.extract_ligand_and_write_xyz"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_ligand_and_write_xyz</span></code></a>(elements, coordinates, ...)</p></td>
+<td><p>This function extracts the ligand from the complex and writes the xyz file of the ligand. The comment line will</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#obelix.molecular_graph.molecular_graph" title="obelix.molecular_graph.molecular_graph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">molecular_graph</span></code></a>(elements, coordinates[, ...])</p></td>
+<td><p>This function is applied to find the molecular graph of a TM complex.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="obelix.molecular_graph.atomic_radii">
+<span class="sig-prename descclassname"><span class="pre">obelix.molecular_graph.</span></span><span class="sig-name descname"><span class="pre">atomic_radii</span></span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#atomic_radii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.atomic_radii" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-prename descclassname"><span class="pre">obelix.molecular_graph.</span></span><span class="sig-name descname"><span class="pre">atomic_radii</span></span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#atomic_radii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">obelix.molecular_graph.</span></span><span class="sig-name descname"><span class="pre">MolGraph</span></span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph" title="Link to this definition"></a></dt>
+<dd><p>This is a molecular graph class, containing several functionalities:
+finding the adjancecy matrix, adjancecy list. Class modified from /xyz2graph/xyz2graph.py.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['elements',</span> <span class="pre">'x',</span> <span class="pre">'y',</span> <span class="pre">'z',</span> <span class="pre">'adj_list',</span> <span class="pre">'atomic_radii',</span> <span class="pre">'bond_lengths',</span> <span class="pre">'adj_matrix']</span></em><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph.__slots__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph.elements">
+<span class="sig-name descname"><span class="pre">elements</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph.elements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph.elements" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph.x">
+<span class="sig-name descname"><span class="pre">x</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph.x"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph.x" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph.y">
+<span class="sig-name descname"><span class="pre">y</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph.y"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph.y" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph.z">
+<span class="sig-name descname"><span class="pre">z</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph.z"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph.z" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph.adj_list">
+<span class="sig-name descname"><span class="pre">adj_list</span></span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph.adj_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph.adj_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph.atomic_radii">
+<span class="sig-name descname"><span class="pre">atomic_radii</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph.atomic_radii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph.atomic_radii" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph.bond_lengths">
+<span class="sig-name descname"><span class="pre">bond_lengths</span></span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph.bond_lengths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph.bond_lengths" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph.adj_matrix">
+<span class="sig-name descname"><span class="pre">adj_matrix</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph.adj_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph.adj_matrix" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph.read_xyz_coord_from_mf">
+<span class="sig-name descname"><span class="pre">read_xyz_coord_from_mf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph.read_xyz_coord_from_mf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph.read_xyz_coord_from_mf" title="Link to this definition"></a></dt>
+<dd><p>Reads elements and coordinates from morfeus, searches for elements and their cartesian coordinates
+and adds them to corresponding arrays.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.molecular_graph.MolGraph._generate_adjacency_list">
+<span class="sig-name descname"><span class="pre">_generate_adjacency_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#MolGraph._generate_adjacency_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.MolGraph._generate_adjacency_list" title="Link to this definition"></a></dt>
+<dd><p>Generates an adjacency list from atomic cartesian coordinates.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="obelix.molecular_graph.bfs">
+<span class="sig-prename descclassname"><span class="pre">obelix.molecular_graph.</span></span><span class="sig-name descname"><span class="pre">bfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visited</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#bfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.bfs" title="Link to this definition"></a></dt>
+<dd><p>This function is a classic breadth-first traversal algorithm. It is applied to find all the subgraphs
+when the metal center is removed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>visited</strong></p></li>
+<li><p><strong>graph</strong></p></li>
+<li><p><strong>node</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return visited<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="obelix.molecular_graph.extract_ligand_and_write_xyz">
+<span class="sig-prename descclassname"><span class="pre">obelix.molecular_graph.</span></span><span class="sig-name descname"><span class="pre">extract_ligand_and_write_xyz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ligand</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bidentate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_to_workflow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#extract_ligand_and_write_xyz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.extract_ligand_and_write_xyz" title="Link to this definition"></a></dt>
+<dd><p>This function extracts the ligand from the complex and writes the xyz file of the ligand. The comment line will
+contain the indices of the donor atoms.
+:param ligand: list of indices of the ligand atoms
+:param bidentate: list of metal center, donor 1, donor 2 indices
+:param path_to_workflow: path to the workflow folder (where the xyz files will be written)
+:param filename: filename of the complex file, which will be used to name the xyz file
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="obelix.molecular_graph.molecular_graph">
+<span class="sig-prename descclassname"><span class="pre">obelix.molecular_graph.</span></span><span class="sig-name descname"><span class="pre">molecular_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_ligand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_to_workflow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#molecular_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.molecular_graph" title="Link to this definition"></a></dt>
+<dd><p>This function is applied to find the molecular graph of a TM complex.
+This function returns the indices of all atoms making the investigated and the indices forming the bite angle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>elements</strong></p></li>
+<li><p><strong>coordinates</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return ligand, bidentate<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="obelix.molecular_graph.path_to_workflow">
+<span class="sig-prename descclassname"><span class="pre">obelix.molecular_graph.</span></span><span class="sig-name descname"><span class="pre">path_to_workflow</span></span><a class="reference internal" href="../../../_modules/obelix/molecular_graph.html#path_to_workflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.molecular_graph.path_to_workflow" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../model_structure_generator/index.html" class="btn btn-neutral float-left" title="obelix.model_structure_generator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../run_workflow/index.html" class="btn btn-neutral float-right" title="obelix.run_workflow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

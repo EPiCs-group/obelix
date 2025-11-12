@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>obelix.descriptor_calculator &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="obelix.dft_extraction" href="../dft_extraction/index.html" />
+    <link rel="prev" title="obelix" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            obelix
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">obelix</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">obelix.descriptor_calculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../dft_extraction/index.html">obelix.dft_extraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../free_ligand/index.html">obelix.free_ligand</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../model_structure_generator/index.html">obelix.model_structure_generator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../molecular_graph/index.html">obelix.molecular_graph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../run_workflow/index.html">obelix.run_workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../tools/index.html">obelix.tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../example_workflow/index.html">example_workflow</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">obelix</a></li>
+      <li class="breadcrumb-item active">obelix.descriptor_calculator</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/obelix/descriptor_calculator/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-obelix.descriptor_calculator">
+<span id="obelix-descriptor-calculator"></span><h1>obelix.descriptor_calculator<a class="headerlink" href="#module-obelix.descriptor_calculator" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#obelix.descriptor_calculator.descriptors" title="obelix.descriptor_calculator.descriptors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">descriptors</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#obelix.descriptor_calculator.Descriptors" title="obelix.descriptor_calculator.Descriptors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Descriptors</span></code></a></p></td>
+<td><p>Class for calculating Morfeus and DFT descriptors. Works for Gaussian log files, CREST folders and xyz files.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">obelix.descriptor_calculator.</span></span><span class="sig-name descname"><span class="pre">Descriptors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_to_workflow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors" title="Link to this definition"></a></dt>
+<dd><p>Class for calculating Morfeus and DFT descriptors. Works for Gaussian log files, CREST folders and xyz files.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors.central_atom">
+<span class="sig-name descname"><span class="pre">central_atom</span></span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors.central_atom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors.central_atom" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors.path_to_workflow">
+<span class="sig-name descname"><span class="pre">path_to_workflow</span></span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors.path_to_workflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors.path_to_workflow" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors.supported_output_types">
+<span class="sig-name descname"><span class="pre">supported_output_types</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['xyz',</span> <span class="pre">'crest',</span> <span class="pre">'gaussian']</span></em><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors.supported_output_types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors.supported_output_types" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors.output_type">
+<span class="sig-name descname"><span class="pre">output_type</span></span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors.output_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors.output_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors.descriptor_df">
+<span class="sig-name descname"><span class="pre">descriptor_df</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors.descriptor_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors.descriptor_df" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors._find_bidentate_ligand">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_find_bidentate_ligand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors._find_bidentate_ligand"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors._find_bidentate_ligand" title="Link to this definition"></a></dt>
+<dd><p>Graph-based approach used to find the bidentate ligand in a complex. This method returns all auxillary ligand
+atoms and the bidentate ligand atoms. For now we only use the bidentate ligand atoms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>elements</strong></p></li>
+<li><p><strong>coordinates</strong></p></li>
+<li><p><strong>geom_type</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors._calculate_c_c_distance_nbd">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_calculate_c_c_distance_nbd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors._calculate_c_c_distance_nbd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors._calculate_c_c_distance_nbd" title="Link to this definition"></a></dt>
+<dd><p>Calculate the distance between the double bonds that pi coordinate to the metal in a NBD geometry.
+In this case the NBD geometry was predefined and the indices are known. (always at the bottom of the file)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>elements</strong></p></li>
+<li><p><strong>coordinates</strong></p></li>
+<li><p><strong>dictionary</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors._calculate_dihedral_angles_nbd_and_metal_donors">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_calculate_dihedral_angles_nbd_and_metal_donors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metal_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bidentate_max_donor_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bidentate_min_donor_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">central_carbon_nbd_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hydrogens_bonded_to_carbon_back_nbd_idxs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors._calculate_dihedral_angles_nbd_and_metal_donors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors._calculate_dihedral_angles_nbd_and_metal_donors" title="Link to this definition"></a></dt>
+<dd><p>Calculate the H-C-M-P dihedral angles for the NBD geometry. In this case the NBD geometry was predefined and the
+indices are known. (always at the bottom of the file)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dictionary</strong></p></li>
+<li><p><strong>metal_idx</strong></p></li>
+<li><p><strong>bidentate_max_donor_idx</strong></p></li>
+<li><p><strong>bidentate_min_donor_idx</strong></p></li>
+<li><p><strong>elements</strong></p></li>
+<li><p><strong>coordinates</strong></p></li>
+<li><p><strong>central_carbon_nbd_idx</strong></p></li>
+<li><p><strong>hydrogens_bonded_to_carbon_back_nbd_idxs</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors._buried_volume_quadrant_analysis">
+<span class="sig-name descname"><span class="pre">_buried_volume_quadrant_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metal_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_axis_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xz_plane_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excluded_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_steric_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors._buried_volume_quadrant_analysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors._buried_volume_quadrant_analysis" title="Link to this definition"></a></dt>
+<dd><p>Calculate the buried volume for the 4 quadrants and 8 octants (positive Z direction) of the bidentate ligand.
+:param elements:
+:param coordinates:
+:param dictionary:
+:param metal_idx:
+:param z_axis_atoms:
+:param xz_plane_atoms:
+:param excluded_atoms:
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors._merge_descriptor_dfs">
+<span class="sig-name descname"><span class="pre">_merge_descriptor_dfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_descriptor_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_descriptor_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors._merge_descriptor_dfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors._merge_descriptor_dfs" title="Link to this definition"></a></dt>
+<dd><p>When self.descriptor_df is not None, the new descriptor df needs to be merged with the old one</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>old_descriptor_df</strong></p></li>
+<li><p><strong>new_descriptor_df</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors.set_output_type">
+<span class="sig-name descname"><span class="pre">set_output_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_output_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors.set_output_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors.set_output_type" title="Link to this definition"></a></dt>
+<dd><p>Set the output type of the descriptor calculator. In this way you can calculate descriptors on CREST output
+first and the xtb xyz’s afterwards (or other way around).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_output_type</strong></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors._calculate_steric_electronic_desc_morfeus">
+<span class="sig-name descname"><span class="pre">_calculate_steric_electronic_desc_morfeus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metal_adduct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pristine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_steric_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors._calculate_steric_electronic_desc_morfeus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors._calculate_steric_electronic_desc_morfeus" title="Link to this definition"></a></dt>
+<dd><p>Calculate all steric and electronic descriptors that can be calculated using Morfeus. For NBD ligands,
+there are additional descriptors that can be calculated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geom_type</strong></p></li>
+<li><p><strong>solvent</strong></p></li>
+<li><p><strong>dictionary</strong></p></li>
+<li><p><strong>elements</strong></p></li>
+<li><p><strong>coordinates</strong></p></li>
+<li><p><strong>filename</strong></p></li>
+<li><p><strong>metal_adduct</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors._calculate_dft_descriptors_from_log">
+<span class="sig-name descname"><span class="pre">_calculate_dft_descriptors_from_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dft</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors._calculate_dft_descriptors_from_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors._calculate_dft_descriptors_from_log" title="Link to this definition"></a></dt>
+<dd><p>Calculate descriptors from DFT log file using the DFTExtractor class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_file</strong></p></li>
+<li><p><strong>metal_idx</strong></p></li>
+<li><p><strong>bidentate_max_donor_idx</strong></p></li>
+<li><p><strong>bidentate_min_donor_idx</strong></p></li>
+<li><p><strong>dictionary</strong></p></li>
+<li><p><strong>metal_adduct</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors.calculate_morfeus_descriptors">
+<span class="sig-name descname"><span class="pre">calculate_morfeus_descriptors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">printout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metal_adduct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pristine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_steric_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors.calculate_morfeus_descriptors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors.calculate_morfeus_descriptors" title="Link to this definition"></a></dt>
+<dd><p>Function that creates the dictionary for descriptor calculation using Morfeus and performs the right actions
+based on the output type. For CREST ensembles, the descriptors are boltzmann weighted and averaged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geom_type</strong></p></li>
+<li><p><strong>solvent</strong></p></li>
+<li><p><strong>printout</strong></p></li>
+<li><p><strong>metal_adduct</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.Descriptors.calculate_dft_descriptors_from_log">
+<span class="sig-name descname"><span class="pre">calculate_dft_descriptors_from_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_xyz_from_log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">printout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metal_adduct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pristine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_steric_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#Descriptors.calculate_dft_descriptors_from_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.Descriptors.calculate_dft_descriptors_from_log" title="Link to this definition"></a></dt>
+<dd><p>Function that creates the dictionary and descriptor dataframe for the DFT descriptors. These descriptors are calculated
+from the log files of the DFT calculations. The log files are parsed using the cclib package. The descriptors are
+calculated using either the Morfeus package or extracted from the log files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geom_type</strong></p></li>
+<li><p><strong>solvent</strong></p></li>
+<li><p><strong>extract_xyz_from_log</strong></p></li>
+<li><p><strong>printout</strong></p></li>
+<li><p><strong>metal_adduct</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="obelix.descriptor_calculator.descriptors">
+<span class="sig-prename descclassname"><span class="pre">obelix.descriptor_calculator.</span></span><span class="sig-name descname"><span class="pre">descriptors</span></span><a class="reference internal" href="../../../_modules/obelix/descriptor_calculator.html#descriptors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.descriptor_calculator.descriptors" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="obelix" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../dft_extraction/index.html" class="btn btn-neutral float-right" title="obelix.dft_extraction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

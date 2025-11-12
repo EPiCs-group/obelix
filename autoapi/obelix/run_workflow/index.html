@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>obelix.run_workflow &mdash; obelix 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="obelix.tools" href="../tools/index.html" />
+    <link rel="prev" title="obelix.molecular_graph" href="../molecular_graph/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            obelix
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">obelix</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../descriptor_calculator/index.html">obelix.descriptor_calculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../dft_extraction/index.html">obelix.dft_extraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../free_ligand/index.html">obelix.free_ligand</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../model_structure_generator/index.html">obelix.model_structure_generator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../molecular_graph/index.html">obelix.molecular_graph</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">obelix.run_workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../tools/index.html">obelix.tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../example_workflow/index.html">example_workflow</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">obelix</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">obelix</a></li>
+      <li class="breadcrumb-item active">obelix.run_workflow</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/obelix/run_workflow/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-obelix.run_workflow">
+<span id="obelix-run-workflow"></span><h1>obelix.run_workflow<a class="headerlink" href="#module-obelix.run_workflow" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#obelix.run_workflow.ligand_excel_file" title="obelix.run_workflow.ligand_excel_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ligand_excel_file</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#obelix.run_workflow.MACE" title="obelix.run_workflow.MACE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MACE</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#obelix.run_workflow.Workflow" title="obelix.run_workflow.Workflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Workflow</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="obelix.run_workflow.MACE">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">obelix.run_workflow.</span></span><span class="sig-name descname"><span class="pre">MACE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bidentate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_of_xyz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#MACE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.MACE" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.MACE.CA">
+<span class="sig-name descname"><span class="pre">CA</span></span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#MACE.CA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.MACE.CA" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.MACE.name_of_xyz">
+<span class="sig-name descname"><span class="pre">name_of_xyz</span></span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#MACE.name_of_xyz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.MACE.name_of_xyz" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.MACE.bidentate">
+<span class="sig-name descname"><span class="pre">bidentate</span></span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#MACE.bidentate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.MACE.bidentate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.MACE.find_bidentate">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">find_bidentate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metal_atom_atomic_number</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#MACE.find_bidentate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.MACE.find_bidentate" title="Link to this definition"></a></dt>
+<dd><p>Find indices of bidentate ligand if functions implemented in MACE class are not working or if
+structure was made manually and there is no mapped SMILES string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> – RDKit mol object</p></li>
+<li><p><strong>metal_atom_atomic_number</strong></p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: list of bidentate atom indices</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.MACE.generate_complex_SP_xyz">
+<span class="sig-name descname"><span class="pre">generate_complex_SP_xyz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auxiliary_ligands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#MACE.generate_complex_SP_xyz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.MACE.generate_complex_SP_xyz" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.MACE.generate_complex_OH_xyz">
+<span class="sig-name descname"><span class="pre">generate_complex_OH_xyz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auxiliary_ligands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">substrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#MACE.generate_complex_OH_xyz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.MACE.generate_complex_OH_xyz" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">obelix.run_workflow.</span></span><span class="sig-name descname"><span class="pre">Workflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mace_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chemspax_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crest_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_to_workflow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descriptor_calculator_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SP'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.mace_input">
+<span class="sig-name descname"><span class="pre">mace_input</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.mace_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.mace_input" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.chemspax_input">
+<span class="sig-name descname"><span class="pre">chemspax_input</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.chemspax_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.chemspax_input" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.crest_input">
+<span class="sig-name descname"><span class="pre">crest_input</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.crest_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.crest_input" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.path_to_workflow">
+<span class="sig-name descname"><span class="pre">path_to_workflow</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.path_to_workflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.path_to_workflow" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.descriptor_calculator_input">
+<span class="sig-name descname"><span class="pre">descriptor_calculator_input</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.descriptor_calculator_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.descriptor_calculator_input" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.bidentate_1_index">
+<span class="sig-name descname"><span class="pre">bidentate_1_index</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.bidentate_1_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.bidentate_1_index" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.bidentate_2_index">
+<span class="sig-name descname"><span class="pre">bidentate_2_index</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.bidentate_2_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.bidentate_2_index" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.metal_index">
+<span class="sig-name descname"><span class="pre">metal_index</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.metal_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.metal_index" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.mace_skeletons">
+<span class="sig-name descname"><span class="pre">mace_skeletons</span></span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.mace_skeletons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.mace_skeletons" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.geom">
+<span class="sig-name descname"><span class="pre">geom</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SP'</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.geom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.geom" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.solvent">
+<span class="sig-name descname"><span class="pre">solvent</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.solvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.solvent" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.initialize_mace">
+<span class="sig-name descname"><span class="pre">initialize_mace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.initialize_mace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.initialize_mace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.initialize_chemspax">
+<span class="sig-name descname"><span class="pre">initialize_chemspax</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.initialize_chemspax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.initialize_chemspax" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.initialize_crest">
+<span class="sig-name descname"><span class="pre">initialize_crest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.initialize_crest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.initialize_crest" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.initialize_descriptor_calculator">
+<span class="sig-name descname"><span class="pre">initialize_descriptor_calculator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.initialize_descriptor_calculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.initialize_descriptor_calculator" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.prepare_folder_structure">
+<span class="sig-name descname"><span class="pre">prepare_folder_structure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.prepare_folder_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.prepare_folder_structure" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.run_mace">
+<span class="sig-name descname"><span class="pre">run_mace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.run_mace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.run_mace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.run_chemspax">
+<span class="sig-name descname"><span class="pre">run_chemspax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">functionalization_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.run_chemspax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.run_chemspax" title="Link to this definition"></a></dt>
+<dd><p>Run chemspax from the pip installable package chemspax.
+Use prepare_data(…) to prepare the substituents.
+Then run main(…) to functionalize the skeletons prepared by MACE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.run_crest">
+<span class="sig-name descname"><span class="pre">run_crest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_complexes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_to_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conformer_search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'off'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.run_crest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.run_crest" title="Link to this definition"></a></dt>
+<dd><p>This function is designed to either run conformer search with xtb preopt. or just xtb optimization.
+The subprocess.call is used to make a binary call from your ./bashrc file or any local path in your
+$PATH system variable.</p>
+<p>Files are stored in the users preferred place when you run the workflow in a modular way, or by design
+the results are stored in your Workflow/CREST folder.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.calculate_descriptors">
+<span class="sig-name descname"><span class="pre">calculate_descriptors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.calculate_descriptors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.calculate_descriptors" title="Link to this definition"></a></dt>
+<dd><p>This function uses the Descriptor class to calculate descriptors for xyz, CREST or log files. The output_type
+is used to determine which descriptors are calculated. The extract_xyz_from_log is used to extract the xyz
+coordinates from the log file. The printout is used to print the descriptors to the screen.</p>
+<p>By default, self.path_to_workflow is used as the path for the files to be read in.
+(so obelix/Workflow)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metal_adduct</strong> – pristine, nbd are fully supported, acetonitrile is WIP</p></li>
+<li><p><strong>output_type</strong> – xyz, crest or gaussian</p></li>
+<li><p><strong>extract_xyz_from_log</strong> – True or False (only used for descriptors from gaussian output)</p></li>
+<li><p><strong>printout</strong> – True or False (prints the descriptors to the screen)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dataframe of descriptors, calculated and loaded in the Descriptor class</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="obelix.run_workflow.Workflow.run_workflow">
+<span class="sig-name descname"><span class="pre">run_workflow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#Workflow.run_workflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.Workflow.run_workflow" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="obelix.run_workflow.ligand_excel_file">
+<span class="sig-prename descclassname"><span class="pre">obelix.run_workflow.</span></span><span class="sig-name descname"><span class="pre">ligand_excel_file</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ligands_test.xlsx'</span></em><a class="reference internal" href="../../../_modules/obelix/run_workflow.html#ligand_excel_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#obelix.run_workflow.ligand_excel_file" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../molecular_graph/index.html" class="btn btn-neutral float-left" title="obelix.molecular_graph" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tools/index.html" class="btn btn-neutral float-right" title="obelix.tools" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TU Delft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

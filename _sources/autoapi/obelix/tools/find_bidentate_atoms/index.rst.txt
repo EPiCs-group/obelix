@@ -1,0 +1,89 @@
+obelix.tools.find_bidentate_atoms
+=================================
+
+.. py:module:: obelix.tools.find_bidentate_atoms
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   obelix.tools.find_bidentate_atoms.complexes_to_calc_descriptors
+   obelix.tools.find_bidentate_atoms.elements
+   obelix.tools.find_bidentate_atoms.test_ligand
+   obelix.tools.find_bidentate_atoms.substrate
+   obelix.tools.find_bidentate_atoms.ligands
+   obelix.tools.find_bidentate_atoms.CA
+   obelix.tools.find_bidentate_atoms.geom
+   obelix.tools.find_bidentate_atoms.X
+   obelix.tools.find_bidentate_atoms.donor_atoms
+   obelix.tools.find_bidentate_atoms.Xs
+   obelix.tools.find_bidentate_atoms.first_conformer
+   obelix.tools.find_bidentate_atoms.bidentate_cycle_idxs
+   obelix.tools.find_bidentate_atoms.bidentate_idxs
+   obelix.tools.find_bidentate_atoms.donor_atoms
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   obelix.tools.find_bidentate_atoms.get_bonded_atoms
+   obelix.tools.find_bidentate_atoms.check_if_at_least_two_mapped_atoms_in_ring
+
+
+Module Contents
+---------------
+
+.. py:function:: get_bonded_atoms(xyz_string, atom_index)
+
+   Use openbabel's methods to find the coordinates of all atoms that are bonded to a given atom
+   :param source_mol_file:
+   :param atom_index:
+   :return: numpy array of atoms bonded to a given atom
+
+
+.. py:data:: complexes_to_calc_descriptors
+
+.. py:data:: elements
+
+.. py:function:: check_if_at_least_two_mapped_atoms_in_ring(list_of_mapped_idxs, list_of_ring_idxs)
+
+.. py:data:: test_ligand
+   :value: 'CC(C)[C@H]1CC[C@@H]([P:1]1C2=CC=CC=C2[N:1]3[C@H](CC[C@@H]3C(C)C)C(C)C)C(C)C'
+
+
+.. py:data:: substrate
+   :value: 'CC#[N:1]'
+
+
+.. py:data:: ligands
+
+.. py:data:: CA
+   :value: '[Ir+3]'
+
+
+.. py:data:: geom
+   :value: 'SP'
+
+
+.. py:data:: X
+
+.. py:data:: donor_atoms
+
+.. py:data:: Xs
+
+.. py:data:: first_conformer
+
+.. py:data:: bidentate_cycle_idxs
+   :value: None
+
+
+.. py:data:: bidentate_idxs
+   :value: []
+
+
+.. py:data:: donor_atoms
+
