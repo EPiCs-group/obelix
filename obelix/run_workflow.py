@@ -436,6 +436,7 @@ class Workflow:
             descriptor_calculator.calculate_dft_descriptors_from_log(geom_type=geom_type, solvent=self.descriptor_solvent,
                                                                      extract_xyz_from_log=self.extract_xyz_from_log,
                                                                      printout=self.descriptor_printout, metal_adduct=self.descriptor_metal_adduct)
+			return descriptor_calculator.descriptor_df
         else:
             raise ValueError('Output type not recognized')
 
